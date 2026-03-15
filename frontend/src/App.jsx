@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import GuidePage from './pages/GuidePage';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useApp();
@@ -60,6 +61,15 @@ function Sidebar({ collapsed, onToggle }) {
       icon: (
         <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+    },
+    {
+      to: '/guide',
+      label: 'See How It Works',
+      icon: (
+        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
     },
@@ -164,6 +174,7 @@ function TopBar() {
     '/chat':      { title: 'AI Health Chat', sub: 'Describe your symptoms for instant triage' },
     '/map':       { title: 'Health Map',     sub: 'Find nearby healthcare facilities'          },
     '/dashboard': { title: 'Analytics Dashboard', sub: 'Health statistics and insights'        },
+    '/guide':     { title: 'How It Works',   sub: 'Learn how to use HealthSaathi'            },
   };
 
   const path = window.location.pathname;
@@ -217,7 +228,7 @@ function AppShell() {
             <Route path="/map"       element={<ProtectedRoute><MapPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/profile"   element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/profile"   element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/guide"     element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
             <Route path="*"          element={<Navigate to="/chat" replace />} />
           </Routes>
         </main>

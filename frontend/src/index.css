@@ -32,6 +32,20 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-teal-400;
   }
+
+  /* Gray scrollbar for quick symptoms */
+  .scrollbar-gray::-webkit-scrollbar {
+    height: 6px;
+  }
+  .scrollbar-gray::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .scrollbar-gray::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  .scrollbar-gray::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
 }
 
 @layer components {

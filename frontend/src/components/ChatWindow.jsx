@@ -75,10 +75,10 @@ export default function ChatWindow() {
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-white via-emerald-50/30 to-white">
+    <div className="flex flex-col h-full bg-gray-100">
 
       {/* ── Messages area ── */}
-      <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4 bg-gray-100">
 
         {/* Welcome message */}
         <div className="flex justify-start mb-6 animate-slide-up">
@@ -115,8 +115,32 @@ export default function ChatWindow() {
       </div>
 
       {/* ── Input bar ── */}
-      <div className="bg-white border-t border-emerald-100 px-8 py-5 shadow-sm">
-        <div className="flex items-end gap-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl px-5 py-3 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-300/30 transition-all duration-200 group hover:ring-2 hover:ring-emerald-300/20">
+      <div className="bg-gray-100 border-t border-gray-300 px-8 py-3 shadow-sm">
+        {/* Quick symptom buttons */}
+        {!messages.some(m => m.role === 'user') && (
+          <div className="mb-3">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Quick Symptoms:</p>
+            <div className="overflow-x-auto flex gap-2 pb-2 scrollbar-gray">
+              {[
+                'I have fever, headache and sore throat',
+                'Chest pain and shortness of breath',
+                'Severe stomach pain and nausea',
+                'Persistent cough and body aches',
+              ].map((symptom, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setInput(symptom)}
+                  className="px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-700 hover:bg-gray-50 hover:border-teal-400 transition-all duration-200 font-medium whitespace-nowrap flex-shrink-0"
+                >
+                  {symptom}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Input container */}
+        <div className="flex items-start gap-3 bg-gray-50 border-2 border-gray-300 rounded-2xl px-5 py-2 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-400/20 transition-all duration-200 group hover:ring-2 hover:ring-gray-300/40">
           <textarea
             ref={textareaRef}
             rows={1}
@@ -125,9 +149,9 @@ export default function ChatWindow() {
             onKeyDown={handleKeyDown}
             placeholder={t.chat.placeholder}
             disabled={loading}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-emerald-400 max-h-32 leading-relaxed disabled:opacity-50 align-top font-medium"
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-500 max-h-32 leading-relaxed disabled:opacity-50 pt-2 font-medium"
           />
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0 pt-2">
             <VoiceButton onTranscript={text => setInput(prev => prev + text)} disabled={loading} />
             {loading ? (
               <button
@@ -152,7 +176,7 @@ export default function ChatWindow() {
             )}
           </div>
         </div>
-        <p className="text-xs text-emerald-600 text-center mt-2 font-medium">Press Enter to send · Shift+Enter for new line · Not a substitute for professional medical advice</p>
+        <p className="text-xs text-gray-600 text-center mt-2 font-medium">Press Enter to send · Shift+Enter for new line · Not a substitute for professional medical advice</p>
       </div>
     </div>
   );
