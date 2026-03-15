@@ -23,10 +23,17 @@ export async function submitTriage(symptoms, lat = null, lng = null, signal = nu
       config.signal = signal;
     }
     
+    console.log('📤 submitTriage payload:', payload);
     const response = await apiClient.post('/triage/', payload, config);
+    console.log('📥 submitTriage response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('submitTriage error:', error);
+    console.error('submitTriage error details:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
     throw error;
   }
 }
@@ -53,10 +60,17 @@ export async function getHealthPosts(lat = null, lng = null, type = null, limit 
       params.limit = limit;
     }
     
+    console.log('📤 getHealthPosts params:', params);
     const response = await apiClient.get('/baato/', { params });
+    console.log('📥 getHealthPosts response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('getHealthPosts error:', error);
+    console.error('getHealthPosts error details:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
     throw error;
   }
 }

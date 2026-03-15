@@ -17,6 +17,12 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
+    console.log(`📡 ${config.method.toUpperCase()} ${config.url}`, {
+      method: config.method,
+      url: config.url,
+      data: config.data,
+      params: config.params
+    });
     return config;
   },
   (error) => {
@@ -26,9 +32,21 @@ apiClient.interceptors.request.use(
 
 // Add response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ Response from ${response.config.method.toUpperCase()} ${response.config.url}:`, {
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
   (error) => {
     // Enhance error messages
+    console.error(`❌ Error from ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, {
+      status: error.response?.status,
+      message: error.message,
+      data: error.response?.data
+    });
+    
     if (error.response?.status === 400) {
       error.message = error.response.data?.error || 'Invalid request';
     } else if (error.response?.status === 401) {

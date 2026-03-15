@@ -51,6 +51,14 @@ export default function ChatWindow() {
     abortControllerRef.current = new AbortController();
 
     try {
+      // DEBUG: Log request details
+      console.log('🔵 Sending triage request:', {
+        symptoms: text,
+        lat: location?.lat,
+        lng: location?.lng,
+        hasLocation: location ? 'YES' : 'NO'
+      });
+
       const result = await submitTriage(
         text,
         location?.lat ?? null,
@@ -58,11 +66,20 @@ export default function ChatWindow() {
         abortControllerRef.current.signal
       );
 
+      // DEBUG: Log response
+      console.log('🟢 Backend response received:', result);
+
       const recommendedType = RISK_TO_FACILITY_TYPE[result?.risk] || 'clinic';
+      console.log('📊 Detected risk level:', result?.risk, '→ Recommended facility:', recommendedType);
+
       let facilities = [];
 
       if (location?.lat != null && location?.lng != null) {
+        console.log('📍 Fetching health posts for:', recommendedType);
         facilities = await getHealthPosts(location.lat, location.lng, recommendedType, 10);
+        console.log('🏥 Fetched facilities:', facilities?.length || 0, 'results');
+      } else {
+        console.log('⚠️ No location available for facility search');
       }
 
       setRecommendedFacilityType(recommendedType);
@@ -83,16 +100,18 @@ export default function ChatWindow() {
     } catch (error) {
       // Check if the error is due to request cancellation
       if (error.name === 'CanceledError') {
+        console.error('❌ Request cancelled');
         addMessage({
           role: 'ai',
           text: 'Request cancelled',
           error: true,
         });
       } else {
+        console.error('❌ API Error:', error);
         const errorMsg = error.message || t.errors.fetchFailed;
         addMessage({
           role: 'ai',
-          text: errorMsg,
+          text: `Error: ${errorMsg}`,
           error: true,
         });
       }
