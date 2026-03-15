@@ -36,7 +36,18 @@ export default function ProfilePage() {
       }
     };
     
+    // Fetch health history on mount so stats always have data
+    const loadHistory = async () => {
+      try {
+        const response = await apiClient.get('/history/');
+        setHealthHistory(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch health history:', error);
+      }
+    };
+    
     loadProfile();
+    loadHistory();
   }, []);
 
   useEffect(() => {
