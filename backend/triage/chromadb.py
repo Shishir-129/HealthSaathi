@@ -1,4 +1,3 @@
-import chromadb
 import json
 import hashlib
 import os
@@ -6,32 +5,50 @@ import unicodedata
 from pathlib import Path
 from dotenv import load_dotenv
 
+try:
+    import chromadb
+    _CHROMADB_IMPORT_ERROR = None
+except Exception as exc:
+    chromadb = None
+    _CHROMADB_IMPORT_ERROR = exc
+
 load_dotenv()
 
-# Initialize ChromaDB with persistent storage
-chroma_db_path = Path(__file__).resolve().parent.parent.parent /"backend" / "chromadb_data"
-chroma_db_path.mkdir(parents=True, exist_ok=True)
+cache_collection = None
+history_collection = None
+knowledge_collection = None
 
-chroma_client = chromadb.PersistentClient(path=str(chroma_db_path))
+if chromadb is not None:
+    try:
+        # Initialize ChromaDB with persistent storage
+        chroma_db_path = Path(__file__).resolve().parent.parent.parent / "chromadb_data"
+        chroma_db_path.mkdir(parents=True, exist_ok=True)
 
-# Collections
-# 1. Global semantic cache for symptom queries (QA pairs)
-cache_collection = chroma_client.get_or_create_collection(
-    name="semantic_cache",
-    metadata={"description": "Global cache for symptom queries and AI responses"}
-)
+        chroma_client = chromadb.PersistentClient(path=str(chroma_db_path))
 
-# 2. User conversation history for context retrieval (RAG Memory)
-history_collection = chroma_client.get_or_create_collection(
-    name="chat_history",
-    metadata={"description": "User conversation history for context awareness"}
-)
+        # Collections
+        # 1. Global semantic cache for symptom queries (QA pairs)
+        cache_collection = chroma_client.get_or_create_collection(
+            name="semantic_cache",
+            metadata={"description": "Global cache for symptom queries and AI responses"}
+        )
 
-# 3. Medical knowledge base for symptom variations
-knowledge_collection = chroma_client.get_or_create_collection(
-    name="symptom_knowledge",
-    metadata={"description": "Medical knowledge base for symptom variations and conditions"}
-)
+        # 2. User conversation history for context retrieval (RAG Memory)
+        history_collection = chroma_client.get_or_create_collection(
+            name="chat_history",
+            metadata={"description": "User conversation history for context awareness"}
+        )
+
+        # 3. Medical knowledge base for symptom variations
+        knowledge_collection = chroma_client.get_or_create_collection(
+            name="symptom_knowledge",
+            metadata={"description": "Medical knowledge base for symptom variations and conditions"}
+        )
+    except Exception as exc:
+        _CHROMADB_IMPORT_ERROR = exc
+        cache_collection = None
+        history_collection = None
+        knowledge_collection = None
 
 
 class ChromaDBManager:
@@ -51,11 +68,13 @@ class ChromaDBManager:
         Returns cached response if found, None otherwise.
         """
         try:
+            if cache_collection is None:
+                return None
             normalized_query = ChromaDBManager._normalize_query_text(query)
             results = cache_collection.query(
                 query_texts=[normalized_query],
                 where={"record_type": "query_cache"},
-                n_results=1
+                n_results=1,
             )
             
             if results['distances'] and results['distances'][0]:
@@ -92,6 +111,8 @@ class ChromaDBManager:
         Returns relevant past conversations formatted as context string.
         """
         try:
+            if history_collection is None:
+                return ""
             results = history_collection.query(
                 query_texts=[query],
                 where={"user_id": user_id} if user_id else None,
@@ -114,6 +135,8 @@ class ChromaDBManager:
         Save query-response pair to global semantic cache.
         """
         try:
+            if cache_collection is None:
+                return False
             normalized_query = ChromaDBManager._normalize_query_text(query)
             query_hash = hashlib.md5(normalized_query.encode()).hexdigest()
             response_str = json.dumps(response)
@@ -142,6 +165,8 @@ class ChromaDBManager:
         Save user query and AI response to conversation history.
         """
         try:
+            if history_collection is None:
+                return False
             history_entry = {
                 "query": query,
                 "response": json.dumps(response),
@@ -170,6 +195,8 @@ class ChromaDBManager:
         Add or update medical knowledge base for symptom variations.
         """
         try:
+            if knowledge_collection is None:
+                return False
             symptom_hash = hashlib.md5(f"{symptom}_{condition}".lower().encode()).hexdigest()
             
             doc_text = f"Symptom: {symptom}\nCondition: {condition}\nDetails: {json.dumps(details)}"
@@ -192,7 +219,13 @@ class ChromaDBManager:
     def get_stats() -> dict:
         """Get statistics about ChromaDB collections"""
         try:
+            if cache_collection is None or history_collection is None or knowledge_collection is None:
+                return {
+                    "enabled": False,
+                    "reason": str(_CHROMADB_IMPORT_ERROR) if _CHROMADB_IMPORT_ERROR else "ChromaDB unavailable"
+                }
             return {
+                "enabled": True,
                 "cache_count": cache_collection.count(),
                 "history_count": history_collection.count(),
                 "knowledge_count": knowledge_collection.count()

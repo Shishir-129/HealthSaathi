@@ -59,9 +59,9 @@ WSGI_APPLICATION = "nepalcare.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE":   "django.db.backends.postgresql",
-        "NAME":     os.getenv("DB_NAME", "healthsathi"),
+        "NAME":     os.getenv("DB_NAME", "HealthSaathi"),
         "USER":     os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "sushil123@#"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "qwerty"),
         "HOST":     os.getenv("DB_HOST", "localhost"),
         "PORT":     os.getenv("DB_PORT", "5432"),
     }
