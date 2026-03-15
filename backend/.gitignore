@@ -102,3 +102,7 @@ ehthumbs.db
 # Miscellaneous
 .cache/
 *.pot
+
+
+
+chromadb_data/
