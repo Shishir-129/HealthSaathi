@@ -22,8 +22,8 @@ export function AppProvider({ children }) {
 
   // Initialize auth from localStorage on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('nc_token');
-    const storedUser = localStorage.getItem('nc_user');
+    const storedToken = sessionStorage.getItem('nc_token') || localStorage.getItem('nc_token');
+    const storedUser = sessionStorage.getItem('nc_user') || localStorage.getItem('nc_user');
     
     if (storedToken && storedUser) {
       try {
@@ -31,8 +31,14 @@ export function AppProvider({ children }) {
         setToken(storedToken);
         setUser(userData);
         setIsAuthenticated(true);
+        sessionStorage.setItem('nc_token', storedToken);
+        sessionStorage.setItem('nc_user', JSON.stringify(userData));
+        localStorage.removeItem('nc_token');
+        localStorage.removeItem('nc_user');
       } catch (err) {
-        console.error('Failed to restore auth from localStorage:', err);
+        console.error('Failed to restore auth from storage:', err);
+        sessionStorage.removeItem('nc_token');
+        sessionStorage.removeItem('nc_user');
         localStorage.removeItem('nc_token');
         localStorage.removeItem('nc_user');
       }
@@ -54,14 +60,18 @@ export function AppProvider({ children }) {
     setUser(userData);
     setToken(authToken);
     setIsAuthenticated(true);
-    localStorage.setItem('nc_token', authToken);
-    localStorage.setItem('nc_user', JSON.stringify(userData));
+    sessionStorage.setItem('nc_token', authToken);
+    sessionStorage.setItem('nc_user', JSON.stringify(userData));
+    localStorage.removeItem('nc_token');
+    localStorage.removeItem('nc_user');
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
+    sessionStorage.removeItem('nc_token');
+    sessionStorage.removeItem('nc_user');
     localStorage.removeItem('nc_token');
     localStorage.removeItem('nc_user');
   }, []);

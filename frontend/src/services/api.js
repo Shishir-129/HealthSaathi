@@ -13,9 +13,10 @@ const apiClient = axios.create({
 // Add request interceptor to include auth token if available
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('nc_token');
+    const token = sessionStorage.getItem('nc_token') || localStorage.getItem('nc_token');
     if (token) {
       config.headers.Authorization = `Token ${token}`;
+      config.headers['X-Session-Token'] = token;
     }
     console.log(`📡 ${config.method.toUpperCase()} ${config.url}`, {
       method: config.method,
