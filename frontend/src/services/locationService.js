@@ -41,3 +41,25 @@ export function watchLocation(onUpdate, onError) {
 export function clearWatch(watchId) {
   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
 }
+
+// Reverse geocoding: Get place name and city from coordinates using Nominatim (OpenStreetMap)
+export async function getPlaceAndCity(lat, lng) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    if (!response.ok) throw new Error('Geocoding failed');
+    const data = await response.json();
+    
+    // Extract city/town and place name
+    const address = data.address || {};
+    const city = address.city || address.town || address.village || address.county || 'Unknown';
+    const place = address.neighbourhood || address.suburb || city;
+    
+    return { place, city };
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    return { place: 'Location', city: 'Nepal' };
+  }
+}

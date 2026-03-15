@@ -34,7 +34,7 @@ const RISK_CONFIG = {
 
 function SectionLabel({ children }) {
   return (
-    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{children}</p>
+    <p className="text-xs font-bold text-teal-700 uppercase tracking-widest mb-2">{children}</p>
   );
 }
 
@@ -73,12 +73,12 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
   const hasExtras = detailedAdvice || foodEat.length || foodAvoid.length || dos.length || donts.length;
 
   return (
-    <div className={`rounded-2xl border-2 ${cfg.border} bg-gradient-to-br ${cfg.gradient} overflow-hidden shadow-sm animate-slide-up`}>
+    <div className={`rounded-2xl border-2 ${cfg.border} bg-gradient-to-br ${cfg.gradient} overflow-hidden shadow-md hover:shadow-lg transition-shadow animate-slide-up`}>
 
       {/* ── Header ── */}
-      <div className="px-4 pt-4 pb-3 flex items-center justify-between">
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`relative w-10 h-10 rounded-xl ${cfg.badgeBg} flex items-center justify-center text-xl shadow-sm`}>
+          <div className={`relative w-12 h-12 rounded-xl ${cfg.badgeBg} flex items-center justify-center text-2xl shadow-md`}>
             {cfg.icon}
             {cfg.pulse && (
               <span className={`absolute inset-0 rounded-xl ${cfg.badgeBg} opacity-40 animate-ping`} />
@@ -86,20 +86,20 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
           </div>
           <div>
             <span className={`text-xs font-bold uppercase tracking-widest ${cfg.accent}`}>Risk Level</span>
-            <p className={`font-extrabold text-lg leading-tight ${cfg.accent}`}>{t.risk[risk]}</p>
+            <p className={`font-extrabold text-xl leading-tight ${cfg.accent}`}>{t.risk[risk]}</p>
           </div>
         </div>
         {recommendedFacilityType && (
-          <span className={`text-xs px-2.5 py-1 rounded-full font-semibold capitalize ${cfg.tagBg}`}>
+          <span className={`text-xs px-3 py-1.5 rounded-full font-bold capitalize ${cfg.tagBg}`}>
             → {recommendedFacilityType}
           </span>
         )}
       </div>
 
       {/* ── Brief Advice ── */}
-      <div className="px-4 pb-3">
+      <div className="px-5 pb-4">
         <SectionLabel>{t.chat.advice}</SectionLabel>
-        <p className="text-gray-800 text-sm font-medium leading-relaxed bg-white/60 rounded-xl px-3 py-2.5 border border-white/80">
+        <p className="text-gray-800 text-sm font-medium leading-relaxed bg-white/70 rounded-xl px-4 py-3 border border-white/90 shadow-sm">
           {briefAdvice}
         </p>
       </div>
@@ -109,11 +109,11 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
         <>
           <button
             onClick={() => setExpanded(e => !e)}
-            className={`w-full flex items-center justify-center gap-1.5 py-2 text-xs font-semibold ${cfg.accent} hover:bg-black/5 transition-colors border-t border-black/5`}
+            className={`w-full flex items-center justify-center gap-1.5 py-3 text-xs font-bold ${cfg.accent} hover:bg-black/5 transition-colors border-t border-black/5`}
           >
             {expanded ? 'Show less' : 'Show detailed guidance'}
             <svg
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -121,23 +121,23 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
           </button>
 
           {expanded && (
-            <div className="px-4 pb-4 space-y-4 border-t border-black/5 pt-4 animate-fade-in">
+            <div className="px-5 pb-4 space-y-4 border-t border-black/5 pt-4 animate-fade-in">
               {detailedAdvice && (
                 <div>
                   <SectionLabel>Detailed Guidance</SectionLabel>
-                  <p className="text-gray-700 text-sm leading-relaxed">{detailedAdvice}</p>
+                  <p className="text-gray-700 text-sm leading-relaxed bg-white/50 rounded-lg p-3 border border-white/70">{detailedAdvice}</p>
                 </div>
               )}
 
               {(dos.length > 0 || donts.length > 0) && (
                 <div className="grid grid-cols-2 gap-3">
                   {dos.length > 0 && (
-                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                       <SectionLabel>✅ Do These</SectionLabel>
                       <ul className="space-y-1">
                         {dos.map((item, i) => (
-                          <li key={i} className="text-xs text-emerald-800 flex gap-1.5">
-                            <span className="mt-0.5 text-emerald-500 flex-shrink-0">•</span>
+                          <li key={i} className="text-xs text-emerald-800 flex gap-1.5 font-medium">
+                            <span className="mt-0.5 text-emerald-600 flex-shrink-0">•</span>
                             {item}
                           </li>
                         ))}
@@ -145,12 +145,12 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
                     </div>
                   )}
                   {donts.length > 0 && (
-                    <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3">
                       <SectionLabel>❌ Avoid These</SectionLabel>
                       <ul className="space-y-1">
                         {donts.map((item, i) => (
-                          <li key={i} className="text-xs text-red-800 flex gap-1.5">
-                            <span className="mt-0.5 text-red-400 flex-shrink-0">•</span>
+                          <li key={i} className="text-xs text-red-800 flex gap-1.5 font-medium">
+                            <span className="mt-0.5 text-red-600 flex-shrink-0">•</span>
                             {item}
                           </li>
                         ))}
@@ -163,13 +163,13 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
               {foodEat.length > 0 && (
                 <div>
                   <SectionLabel>🍎 Foods to Eat</SectionLabel>
-                  <TagList items={foodEat} colorClass="bg-green-100 text-green-700" />
+                  <TagList items={foodEat} colorClass="bg-green-100 text-green-700 font-medium" />
                 </div>
               )}
               {foodAvoid.length > 0 && (
                 <div>
                   <SectionLabel>🚫 Foods to Avoid</SectionLabel>
-                  <TagList items={foodAvoid} colorClass="bg-red-100 text-red-700" />
+                  <TagList items={foodAvoid} colorClass="bg-red-100 text-red-700 font-medium" />
                 </div>
               )}
             </div>
@@ -181,32 +181,32 @@ export default function RiskCard({ risk, advice, action, nepaliAdvice, nearestPo
       {nearestPost && (
         <div
           onClick={handleHospitalClick}
-          className="mx-4 mb-4 bg-white rounded-xl border border-gray-200 p-3.5 cursor-pointer hover:border-teal-300 hover:shadow-md transition-all duration-200 group"
+          className="mx-5 mb-5 bg-white rounded-xl border border-teal-200 p-4 cursor-pointer hover:border-teal-400 hover:shadow-lg transition-all duration-200 group shadow-sm"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 border border-teal-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-5 h-5 text-teal-600 font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-0.5">{t.chat.nearestPost}</p>
-                <p className="font-semibold text-gray-900 text-sm">{nearestPost.name}</p>
-                {nearestPost.address && <p className="text-xs text-gray-500 mt-0.5">{nearestPost.address}</p>}
+                <p className="text-xs font-bold text-teal-700 uppercase tracking-wide mb-0.5">{t.chat.nearestPost}</p>
+                <p className="font-bold text-gray-900 text-sm">{nearestPost.name}</p>
+                {nearestPost.address && <p className="text-xs text-gray-600 mt-1 font-medium">{nearestPost.address}</p>}
               </div>
             </div>
-            <span className="text-xs text-teal-600 font-semibold group-hover:text-teal-700 flex items-center gap-0.5 flex-shrink-0">
+            <span className="text-xs text-teal-600 font-bold group-hover:text-teal-700 flex items-center gap-0.5 flex-shrink-0">
               Map
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </span>
           </div>
           {nearestPost.type && (
-            <div className="mt-2 flex items-center gap-1.5">
-              <span className="text-xs bg-teal-50 text-teal-700 border border-teal-100 rounded-full px-2.5 py-0.5 capitalize">
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs bg-gradient-to-r from-teal-100 to-emerald-100 text-teal-700 border border-teal-200 rounded-full px-3 py-1 capitalize font-bold">
                 🏥 {nearestPost.type.replace('_', ' ')}
               </span>
             </div>

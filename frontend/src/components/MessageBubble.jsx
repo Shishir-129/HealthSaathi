@@ -6,22 +6,22 @@ export default function MessageBubble({ message }) {
   const isUser = role === 'user';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-nepal-blue flex items-center justify-center text-white text-xs font-bold mr-2 flex-shrink-0 mt-0.5">
-          AI
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold mr-3 flex-shrink-0 mt-0.5 shadow-md">
+          H
         </div>
       )}
 
-      <div className={`max-w-[80%] space-y-2`}>
+      <div className={`max-w-[75%] space-y-3`}>
         {/* Text bubble */}
         <div
-          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+          className={`px-5 py-3.5 rounded-2xl text-sm leading-relaxed font-medium transition-all ${
             isUser
-              ? 'bg-primary-600 text-white rounded-tr-sm'
+              ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-tr-sm shadow-md hover:shadow-lg'
               : error
-              ? 'bg-red-50 text-red-700 border border-red-200 rounded-tl-sm'
-              : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-tl-sm'
+              ? 'bg-red-50 text-red-700 border border-red-300 rounded-tl-sm'
+              : 'bg-white text-gray-800 shadow-sm border border-emerald-200 rounded-tl-sm hover:shadow-md hover:border-emerald-300'
           }`}
         >
           {text}
@@ -42,7 +42,7 @@ export default function MessageBubble({ message }) {
       </div>
 
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 text-xs font-bold ml-2 flex-shrink-0 mt-0.5">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold ml-3 flex-shrink-0 mt-0.5 shadow-md">
           You
         </div>
       )}

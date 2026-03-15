@@ -156,6 +156,27 @@ export default function HealthMap({ posts = [], targetHospital = null }) {
           />
         );
       })}
+
+      {/* Legend */}
+      <div className="absolute bottom-6 left-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50 max-w-xs">
+        <h4 className="font-bold text-gray-900 text-sm mb-3">Map Legend</h4>
+        <div className="space-y-2">
+          {/* Blue marker - Your location */}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">●</div>
+            <span className="text-xs text-gray-700 font-medium">Your Location</span>
+          </div>
+          {/* Red marker - Healthcare facilities */}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">●</div>
+            <span className="text-xs text-gray-700 font-medium">Healthcare Facility</span>
+          </div>
+          {/* Hospital info */}
+          <div className="border-t border-gray-200 pt-2 mt-2">
+            <p className="text-xs text-gray-600">📍 Click markers to see details</p>
+          </div>
+        </div>
+      </div>
     </MapContainer>
   );
 }

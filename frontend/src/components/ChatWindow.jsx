@@ -75,19 +75,19 @@ export default function ChatWindow() {
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-gradient-to-br from-white via-emerald-50/30 to-white">
 
       {/* ── Messages area ── */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-2">
+      <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
 
         {/* Welcome message */}
-        <div className="flex justify-start mb-4 animate-slide-up">
-          <div className="flex items-start gap-3 max-w-2xl">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm">
-              AI
+        <div className="flex justify-start mb-6 animate-slide-up">
+          <div className="flex items-start gap-4 max-w-3xl">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md">
+              H
             </div>
-            <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm">
-              <p className="text-gray-800 text-sm leading-relaxed">{t.chat.welcome}</p>
+            <div className="bg-white border border-emerald-200 rounded-2xl rounded-tl-sm px-6 py-4 shadow-sm hover:shadow-md transition-shadow">
+              <p className="text-gray-800 text-sm leading-relaxed font-medium">{t.chat.welcome}</p>
             </div>
           </div>
         </div>
@@ -97,15 +97,15 @@ export default function ChatWindow() {
         {/* Typing indicator */}
         {loading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm">
-                AI
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md">
+                H
               </div>
-              <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm">
+              <div className="bg-white border border-emerald-200 rounded-2xl rounded-tl-sm px-6 py-4 shadow-sm">
                 <div className="flex gap-1.5 items-center py-1">
-                  <span className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2.5 h-2.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -115,8 +115,8 @@ export default function ChatWindow() {
       </div>
 
       {/* ── Input bar ── */}
-      <div className="bg-white border-t border-gray-100 px-6 py-4 shadow-sm">
-        <div className="flex items-end gap-3 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-400/20 transition-all duration-200">
+      <div className="bg-white border-t border-emerald-100 px-8 py-5 shadow-sm">
+        <div className="flex items-end gap-3 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl px-5 py-3 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-300/30 transition-all duration-200 group hover:ring-2 hover:ring-emerald-300/20">
           <textarea
             ref={textareaRef}
             rows={1}
@@ -125,17 +125,17 @@ export default function ChatWindow() {
             onKeyDown={handleKeyDown}
             placeholder={t.chat.placeholder}
             disabled={loading}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-gray-400 max-h-32 leading-relaxed disabled:opacity-50 align-top"
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-gray-800 placeholder-emerald-400 max-h-32 leading-relaxed disabled:opacity-50 align-top font-medium"
           />
           <div className="flex items-center gap-2 flex-shrink-0">
             <VoiceButton onTranscript={text => setInput(prev => prev + text)} disabled={loading} />
             {loading ? (
               <button
                 onClick={handleCancel}
-                className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors shadow-sm"
+                className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
                 title="Cancel"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -143,16 +143,16 @@ export default function ChatWindow() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="p-2.5 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white rounded-xl transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                className="p-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white rounded-xl transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-sm"
               >
-                <svg className="w-4 h-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-5 h-5 rotate-90 font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7 7-7 7 7" />
                 </svg>
               </button>
             )}
           </div>
         </div>
-        <p className="text-xs text-gray-400 text-center mt-2">Press Enter to send · Shift+Enter for new line · Not a substitute for professional medical advice</p>
+        <p className="text-xs text-emerald-600 text-center mt-2 font-medium">Press Enter to send · Shift+Enter for new line · Not a substitute for professional medical advice</p>
       </div>
     </div>
   );
