@@ -30,7 +30,7 @@ export default function ProfilePage() {
   const fetchHealthHistory = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get('/triage/history/');
+      const response = await apiClient.get('/history/');
       setHealthHistory(response.data || []);
     } catch (error) {
       console.error('Failed to fetch health history:', error);
@@ -241,38 +241,38 @@ export default function ProfilePage() {
                   <p className="text-gray-500 text-sm mt-2">Start a new consultation to build your health record</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {healthHistory.map((session, idx) => (
-                    <div key={idx} className="card-light">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Session ID: {session.session_id.substring(0, 8)}...</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {new Date(session.created_at).toLocaleDateString()} at {new Date(session.created_at).toLocaleTimeString()}
-                          </p>
+                <div className="overflow-x-auto pb-2">
+                  <div className="flex gap-4 min-w-min">
+                    {healthHistory.map((session, idx) => (
+                      <div key={idx} className="flex-shrink-0 w-80 bg-white rounded-2xl border border-teal-100 p-5 hover:shadow-lg hover:border-teal-300 transition-all cursor-pointer">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-600 font-medium">{new Date(session.created_at).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-500 mt-1">{new Date(session.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                          </div>
+                          <div className={`px-2 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
+                            session.risk_level === 'HIGH'
+                              ? 'badge-high'
+                              : session.risk_level === 'MEDIUM'
+                              ? 'badge-medium'
+                              : 'badge-low'
+                          }`}>
+                            {session.risk_level}
+                          </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          session.risk_level === 'HIGH'
-                            ? 'badge-high'
-                            : session.risk_level === 'MEDIUM'
-                            ? 'badge-medium'
-                            : 'badge-low'
-                        }`}>
-                          {session.risk_level}
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">District</p>
+                            <p className="text-sm font-semibold text-gray-900 mt-1">{session.district || 'General Check'}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Symptoms</p>
+                            <p className="text-sm text-gray-700 mt-1 line-clamp-2">{session.symptoms}</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">District</p>
-                          <p className="text-sm font-semibold text-gray-900 mt-1">{session.district || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Consultations</p>
-                          <p className="text-sm font-semibold text-gray-900 mt-1">{session.items?.length || 1} items</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

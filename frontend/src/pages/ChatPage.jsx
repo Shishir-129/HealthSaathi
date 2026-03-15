@@ -9,13 +9,15 @@ export default function ChatPage() {
     t, location, setLocation,
     locationError, setLocationError,
     locationLoading, setLocationLoading,
-    messages, clearMessages,
+    messages, clearMessages, addMessage,
     setRecommendedFacilityType, setRecommendedFacilities,
   } = useApp();
 
   const [chatHistory, setChatHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [placeData, setPlaceData] = useState({ place: null, city: null, loading: false });
+  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleGetLocation = () => {
     setLocationLoading(true);
@@ -23,6 +25,34 @@ export default function ChatPage() {
     getCurrentLocation()
       .then(loc  => { setLocation(loc); setLocationLoading(false); })
       .catch(err => { setLocationError(err.message); setLocationLoading(false); });
+  };
+
+  const handleLoadConsultation = (session) => {
+    // Clear current chat
+    clearMessages();
+    setRecommendedFacilityType(null);
+    setRecommendedFacilities([]);
+
+    // Add the symptoms as a user message
+    addMessage({ sender: 'user', text: session.symptoms });
+
+    // Add the AI response with triageResult for RiskCard formatting
+    addMessage({
+      sender: 'ai',
+      text: 'Here is your consultation result:',
+      triageResult: {
+        risk: session.risk_level,
+        brief_advice: session.brief_advice,
+        detailed_advice: session.detailed_advice,
+        food_eat: session.food_eat,
+        food_avoid: session.food_avoid,
+        dos: session.dos,
+        donts: session.donts,
+        nepali_advice: session.nepali_advice,
+        recommended_facilities: [],
+        recommended_facility_type: session.district,
+      }
+    });
   };
 
   const handleNewConsultation = () => {
@@ -50,7 +80,7 @@ export default function ChatPage() {
   const fetchChatHistory = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get('/triage/history/');
+      const response = await apiClient.get('/history/');
       setChatHistory(response.data || []);
     } catch (error) {
       console.error('Failed to fetch history:', error);
@@ -63,60 +93,94 @@ export default function ChatPage() {
     <div className="flex h-full bg-transparent overflow-hidden gap-3 p-3">
 
       {/* ─── Left Sidebar: Chat History ─── */}
-      <div className="hidden xl:flex flex-col w-80 gap-3 overflow-hidden bg-gradient-to-b from-teal-700 to-teal-800 rounded-2xl p-4">
+      {!isSidebarCollapsed && (
+        <div className="hidden xl:flex flex-col w-80 gap-3 overflow-hidden bg-gray-100 rounded-2xl p-4 animate-in fade-in slide-in-from-left">
 
-        {/* New Consultation Button */}
-        <button onClick={handleNewConsultation} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold px-4 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          New Consultation
-        </button>
+          {/* Collapse Sidebar Button */}
+          <button
+            onClick={() => setIsSidebarCollapsed(true)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium text-sm transition-colors px-2 py-1 hover:bg-gray-200 rounded-lg"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Collapse
+          </button>
 
-        {/* Chat History */}
-        <div className="bg-teal-600/30 rounded-2xl p-3 border border-teal-500/40 flex flex-col overflow-hidden">
-          <h3 className="text-sm font-bold text-teal-50 uppercase tracking-wider mb-2">📋 Recent Consultations</h3>
-          <div className="flex-1 overflow-y-auto space-y-2">
-            {loading ? (
-              <div className="flex justify-center items-center py-8">
-                <div className="w-6 h-6 border-2 border-teal-300 border-t-teal-600 rounded-full animate-spin" />
-              </div>
-            ) : chatHistory.length === 0 ? (
-              <p className="text-xs text-teal-200/80 text-center py-4">No consultations yet. Start a new conversation!</p>
-            ) : (
-              chatHistory.slice(0, 5).map((session, idx) => (
-                <button
-                  key={idx}
-                  className="text-left p-3 rounded-lg bg-teal-600/40 border border-teal-500/50 hover:border-teal-400 hover:bg-teal-600/50 transition-all group"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className={`text-lg ${
-                      session.risk_level === 'HIGH' ? '🔴' :
-                      session.risk_level === 'MEDIUM' ? '🟡' :
-                      '🟢'
-                    }`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-teal-50 group-hover:text-teal-100 transition-colors">
-                        {new Date(session.created_at).toLocaleDateString()}
-                      </p>
-                      <p className="text-xs text-teal-200/80 mt-0.5 line-clamp-1">{session.district || 'General Check'}</p>
-                      <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full mt-1.5 ${
-                        session.risk_level === 'HIGH'
-                          ? 'badge-high'
-                          : session.risk_level === 'MEDIUM'
-                          ? 'badge-medium'
-                          : 'badge-low'
-                      }`}>
-                        {session.risk_level}
-                      </span>
+          {/* New Consultation Button */}
+          <button onClick={handleNewConsultation} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold px-4 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            New Consultation
+          </button>
+
+          {/* Chat History */}
+          <div className="bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden relative">
+            <button
+              onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
+              className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+            >
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">📋 Recent Consultations</h3>
+              <svg className={`w-5 h-5 text-gray-600 transition-transform ${isHistoryCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7-7m0 0L5 14m7-7v12" />
+              </svg>
+            </button>
+
+            {!isHistoryCollapsed && (
+              <>
+                <div className="absolute right-0 top-14 bottom-0 w-1 bg-gradient-to-b from-teal-400 to-emerald-500 rounded-r-lg" />
+                <div className="flex-1 overflow-y-auto space-y-1 border-t border-gray-200 p-2">
+                  {loading ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="w-6 h-6 border-2 border-teal-300 border-t-teal-600 rounded-full animate-spin" />
                     </div>
-                  </div>
-                </button>
-              ))
+                  ) : chatHistory.length === 0 ? (
+                    <p className="text-xs text-gray-500 text-center py-4">No consultations yet</p>
+                  ) : (
+                    chatHistory.slice(0, 10).map((session, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleLoadConsultation(session)}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-all group text-xs"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`text-sm flex-shrink-0 ${
+                            session.risk_level === 'HIGH' ? '🔴' :
+                            session.risk_level === 'MEDIUM' ? '🟡' :
+                            '🟢'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-gray-700 font-medium truncate group-hover:text-teal-600">
+                              {session.symptoms.substring(0, 40)}{session.symptoms.length > 40 ? '...' : ''}
+                            </p>
+                            <p className="text-gray-500 text-xs mt-0.5">
+                              {new Date(session.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
             )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Expand Sidebar Button (when collapsed) */}
+      {isSidebarCollapsed && (
+        <button
+          onClick={() => setIsSidebarCollapsed(false)}
+          className="hidden xl:flex items-center justify-center w-14 h-14 bg-white hover:bg-gray-100 rounded-full transition-all shadow-lg text-teal-600 hover:text-teal-700 flex-shrink-0 border border-gray-200 animate-in fade-in"
+          title="Expand sidebar"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      )}
 
       {/* ─── Main Chat Area ─── */}
       <div className="flex flex-col flex-1 min-w-0">
