@@ -1,34 +1,53 @@
 import React from 'react';
+import { useApp } from '../context/AppContext';
 
 export default function GuidePage() {
+  const { t } = useApp();
+  
   const guidanceSteps = [
     {
       step: '1',
-      title: 'Describe Your Symptoms',
-      desc: 'Type or speak your symptoms naturally',
+      title: t.guide?.step1Title || 'Describe Your Symptoms',
+      desc: t.guide?.step1Desc || 'Type or speak your symptoms naturally',
       icon: '💬',
-      tips: ['Be as detailed as possible', 'Mention when symptoms started', 'Include severity if known']
+      tips: [
+        t.guide?.step1Tip1 || 'Be as detailed as possible',
+        t.guide?.step1Tip2 || 'Mention when symptoms started',
+        t.guide?.step1Tip3 || 'Include severity if known'
+      ]
     },
     {
       step: '2',
-      title: 'AI Analysis',
-      desc: 'Our AI analyzes your symptoms',
+      title: t.guide?.step2Title || 'AI Analysis',
+      desc: t.guide?.step2Desc || 'Our AI analyzes your symptoms',
       icon: '🧠',
-      tips: ['Risk assessment (Low/Medium/High)', 'Personalized advice provided', 'Facility recommendations']
+      tips: [
+        t.guide?.step2Tip1 || 'Risk assessment (Low/Medium/High)',
+        t.guide?.step2Tip2 || 'Personalized advice provided',
+        t.guide?.step2Tip3 || 'Facility recommendations'
+      ]
     },
     {
       step: '3',
-      title: 'Get Recommendations',
-      desc: 'Receive healthcare facility suggestions',
+      title: t.guide?.step3Title || 'Get Recommendations',
+      desc: t.guide?.step3Desc || 'Receive healthcare facility suggestions',
       icon: '🏥',
-      tips: ['Nearby hospitals & clinics', 'Pharmacies in your area', 'Distance and directions']
+      tips: [
+        t.guide?.step3Tip1 || 'Nearby hospitals & clinics',
+        t.guide?.step3Tip2 || 'Pharmacies in your area',
+        t.guide?.step3Tip3 || 'Distance and directions'
+      ]
     },
     {
       step: '4',
-      title: 'Track Your Health',
-      desc: 'Keep your consultation history safe',
+      title: t.guide?.step4Title || 'Track Your Health',
+      desc: t.guide?.step4Desc || 'Keep your consultation history safe',
       icon: '📋',
-      tips: ['Automatic record keeping', 'Review past consultations', 'Monitor your health trends']
+      tips: [
+        t.guide?.step4Tip1 || 'Automatic record keeping',
+        t.guide?.step4Tip2 || 'Review past consultations',
+        t.guide?.step4Tip3 || 'Monitor your health trends'
+      ]
     },
   ];
 
@@ -37,8 +56,8 @@ export default function GuidePage() {
       <div className="w-full max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">How HealthSaathi Works</h1>
-          <p className="text-gray-600">Follow these simple steps to get personalized health guidance</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.guide?.title || 'How HealthSathi Works'}</h1>
+          <p className="text-gray-600">{t.guide?.subtitle || 'Follow these simple steps to get personalized health guidance'}</p>
         </div>
 
         {/* Steps Grid */}
@@ -75,13 +94,13 @@ export default function GuidePage() {
 
         {/* Call to Action */}
         <div className="mt-12 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-2xl p-8 text-white text-center">
-          <h3 className="text-2xl font-bold mb-2">Ready to Get Started?</h3>
-          <p className="mb-4 text-teal-100">Go to AI Triage Chat to describe your symptoms and get personalized recommendations.</p>
+          <h3 className="text-2xl font-bold mb-2">{t.guide?.ctaTitle || 'Ready to Get Started?'}</h3>
+          <p className="mb-4 text-teal-100">{t.guide?.ctaDesc || 'Go to AI Triage Chat to describe your symptoms and get personalized recommendations.'}</p>
           <a
             href="/chat"
             className="inline-block bg-white text-teal-600 font-bold px-6 py-2.5 rounded-lg hover:bg-teal-50 transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            Start Consultation →
+            {t.guide?.ctaButton || 'Start Consultation →'}
           </a>
         </div>
       </div>
