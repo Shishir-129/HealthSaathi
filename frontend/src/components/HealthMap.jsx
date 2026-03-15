@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import React, { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useApp } from '../context/AppContext';
@@ -85,9 +85,35 @@ function HospitalMarker({ post, point, isTarget }) {
   );
 }
 
+/**
+ * Fetch road route from OSRM (Open Source Routing Machine)
+ * Returns array of [lat, lng] coordinates following actual roads
+ */
+async function fetchRoadRoute(startLat, startLng, endLat, endLng) {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+      // Convert GeoJSON coordinates to [lat, lng] format for Leaflet
+      return data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+    }
+    
+    // Fallback to straight line if routing fails
+    console.warn('OSRM routing failed, using straight line fallback');
+    return [[startLat, startLng], [endLat, endLng]];
+  } catch (error) {
+    console.error('Route fetch error:', error);
+    // Fallback to straight line
+    return [[startLat, startLng], [endLat, endLng]];
+  }
+}
+
 
 export default function HealthMap({ posts = [], targetHospital = null }) {
   const { t, location } = useApp();
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
 
   let centerLat = 27.7172; // Default Kathmandu
   let centerLng = 85.3240;
@@ -95,6 +121,16 @@ export default function HealthMap({ posts = [], targetHospital = null }) {
 
   
   const targetPoint = targetHospital ? extractLatLng(targetHospital) : null;
+
+  // Fetch route when target point changes
+  useEffect(() => {
+    if (location && targetPoint) {
+      fetchRoadRoute(location.lat, location.lng, targetPoint.lat, targetPoint.lng)
+        .then(coords => setRouteCoordinates(coords));
+    } else {
+      setRouteCoordinates([]);
+    }
+  }, [location, targetPoint]);
 
   if (targetPoint) {
     centerLat = targetPoint.lat;
@@ -137,6 +173,28 @@ export default function HealthMap({ posts = [], targetHospital = null }) {
         </Marker>
       )}
 
+      {/* Draw route line from user location to target hospital through actual roads */}
+      {location && targetPoint && routeCoordinates.length > 0 && (
+        <Polyline
+          positions={routeCoordinates}
+          color="#0284c7"
+          weight={8}
+          opacity={1}
+          lineCap="round"
+          lineJoin="round"
+        />
+      )}
+      
+      {/* Loading indicator for route */}
+      {location && targetPoint && routeCoordinates.length === 0 && (
+        <div className="absolute top-6 left-6 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 z-50">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-blue-400 border-t-blue-600 rounded-full animate-spin" />
+            <span className="text-xs font-medium text-blue-700">Calculating route...</span>
+          </div>
+        </div>
+      )}
+
       {allPosts.map((post, idx) => {
         
         const point = extractLatLng(post);
@@ -157,26 +215,6 @@ export default function HealthMap({ posts = [], targetHospital = null }) {
         );
       })}
 
-      {/* Legend */}
-      <div className="absolute bottom-6 left-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50 max-w-xs">
-        <h4 className="font-bold text-gray-900 text-sm mb-3">Map Legend</h4>
-        <div className="space-y-2">
-          {/* Blue marker - Your location */}
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">●</div>
-            <span className="text-xs text-gray-700 font-medium">Your Location</span>
-          </div>
-          {/* Red marker - Healthcare facilities */}
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">●</div>
-            <span className="text-xs text-gray-700 font-medium">Healthcare Facility</span>
-          </div>
-          {/* Hospital info */}
-          <div className="border-t border-gray-200 pt-2 mt-2">
-            <p className="text-xs text-gray-600">📍 Click markers to see details</p>
-          </div>
-        </div>
-      </div>
     </MapContainer>
   );
 }

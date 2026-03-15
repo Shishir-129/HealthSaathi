@@ -10,7 +10,7 @@ const RISK_TO_FACILITY_TYPE = {
   LOW:    'clinic',
 };
 
-export default function ChatWindow({ onConsultationSubmitted, conversationId, onConversationIdChange }) {
+export default function ChatWindow({ onConsultationSubmitted, conversationId, onConversationIdChange, district }) {
   const {
     t, location, messages, addMessage,
     loading, setLoading,
@@ -47,7 +47,8 @@ export default function ChatWindow({ onConsultationSubmitted, conversationId, on
       const result = await submitTriage(
         text, location?.lat ?? null, location?.lng ?? null,
         abortControllerRef.current.signal,
-        localConversationId
+        localConversationId,
+        district
       );
       
       // Update conversation ID if returned from backend (for new conversations)

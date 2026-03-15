@@ -315,7 +315,7 @@ export default function ChatPage() {
 
         {/* Chat content */}
         <div className="flex-1 overflow-hidden bg-gray-100">
-          <ChatWindow key={sessionKey} conversationId={conversationId} onConversationIdChange={setConversationId} onConsultationSubmitted={fetchChatHistory} />
+          <ChatWindow key={sessionKey} conversationId={conversationId} district={placeData.city} onConversationIdChange={setConversationId} onConsultationSubmitted={fetchChatHistory} />
         </div>
       </div>
     </div>

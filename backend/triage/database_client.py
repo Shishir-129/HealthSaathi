@@ -83,10 +83,14 @@ def get_user_history(user_id: int):
         return []
 
 
-def get_real_stats():
-    """Get real-time statistics from database."""
+def get_real_stats(user_id=None):
+    """Get real-time statistics from database, optionally filtered by user."""
     try:
-        sessions = TriageSession.objects.all().values('risk_level', 'district', 'created_at')
+        # Filter by user if user_id is provided, otherwise get all sessions
+        if user_id:
+            sessions = TriageSession.objects.filter(user_id=user_id).values('risk_level', 'district', 'created_at')
+        else:
+            sessions = TriageSession.objects.all().values('risk_level', 'district', 'created_at')
         
         if not sessions.exists():
             return None

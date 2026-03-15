@@ -343,33 +343,38 @@ class HistoryView(APIView):
 
 class StatsView(APIView):
     def get(self, request):
+        # Get authenticated user
+        user = _get_authenticated_user(request)
+        
         try:
-            real_stats = get_real_stats()
+            real_stats = get_real_stats(user_id=user.id if user else None)
             if real_stats:
                 return Response(real_stats)
         except Exception as e:
             print(f"❌ Stats error: {e}")
 
+        # Return empty stats if user not authenticated or no data
+        if not user:
+            return Response({
+                "total_sessions": 0,
+                "source": "no_auth",
+                "risk_distribution": {
+                    "HIGH": 0,
+                    "MEDIUM": 0,
+                    "LOW": 0
+                },
+                "districts": []
+            })
+
         return Response({
-            "total_sessions": 1247,
-            "source": "hardcoded",
+            "total_sessions": 0,
+            "source": "no_data",
             "risk_distribution": {
-                "HIGH":   187,
-                "MEDIUM": 634,
-                "LOW":    426
+                "HIGH": 0,
+                "MEDIUM": 0,
+                "LOW": 0
             },
-            "districts": [
-                {"name": "Kathmandu",  "count": 412},
-                {"name": "Lalitpur",   "count": 261},
-                {"name": "Pokhara",    "count": 184},
-                {"name": "Chitwan",    "count": 142},
-                {"name": "Biratnagar", "count": 103},
-                {"name": "Butwal",     "count": 87},
-                {"name": "Dharan",     "count": 76},
-                {"name": "Bhaktapur",  "count": 98},
-                {"name": "Nepalgunj",  "count": 58},
-                {"name": "Janakpur",   "count": 42},
-            ]
+            "districts": []
         })
 
 

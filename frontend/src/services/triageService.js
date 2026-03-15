@@ -47,9 +47,10 @@ export async function register(name, email, password) {
  * @param {number} lng - Longitude (optional)
  * @param {AbortSignal} signal - AbortSignal for request cancellation (optional)
  * @param {string} conversationId - Conversation ID to group multiple symptoms (optional)
+ * @param {string} district - District/city name from reverse geocoding (optional)
  * @returns {Promise<Object>} Triage result with risk, advice, dos/donts, etc.
  */
-export async function submitTriage(symptoms, lat = null, lng = null, signal = null, conversationId = null) {
+export async function submitTriage(symptoms, lat = null, lng = null, signal = null, conversationId = null, district = null) {
   try {
     // Generate a unique session ID for each submission
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -58,7 +59,7 @@ export async function submitTriage(symptoms, lat = null, lng = null, signal = nu
       symptoms,
       lat: lat ?? null,
       lng: lng ?? null,
-      district: '',
+      district: district || '',
       session_id: sessionId,
       conversation_id: conversationId,
     };

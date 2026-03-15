@@ -34,7 +34,7 @@ export default function MapPage() {
   return (
     <div className="flex flex-col h-full bg-gray-50">
 
-      {/* ── Map header ── */}
+      {/* ── Map header with legend ── */}
       <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-lg">
@@ -50,18 +50,36 @@ export default function MapPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {loading && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <div className="w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs">{t.map.loading}</span>
+        <div className="flex items-center gap-4">
+          {/* Compact inline legend */}
+          <div className="hidden sm:flex items-center gap-4 text-xs text-gray-600 border-l border-gray-200 pl-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 bg-blue-500 rounded-full" />
+              <span>You</span>
             </div>
-          )}
-          {recommendedFacilityType && (
-            <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border capitalize ${typeColor}`}>
-              📍 {recommendedFacilityType}s
-            </span>
-          )}
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 bg-red-500 rounded-full" />
+              <span>Facility</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-0.5 bg-sky-600 rounded-full" />
+              <span>Route</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {loading && (
+              <div className="flex items-center gap-2 text-gray-400">
+                <div className="w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs">{t.map.loading}</span>
+              </div>
+            )}
+            {recommendedFacilityType && (
+              <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border capitalize ${typeColor}`}>
+                📍 {recommendedFacilityType}s
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
