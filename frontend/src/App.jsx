@@ -103,6 +103,11 @@ function Sidebar({ collapsed, onToggle }) {
           <NavLink
             key={to}
             to={to}
+            onClick={() => {
+              // Close mobile menu when navigation item is clicked
+              const closeBtn = document.querySelector('[data-mobile-close]');
+              if (closeBtn) closeBtn.click();
+            }}
             className={({ isActive }) =>
               isActive
                 ? `flex items-center gap-3 px-3 py-2.5 rounded-xl text-white bg-gradient-to-r from-teal-500 to-emerald-500 font-semibold shadow-md transition-all duration-200 ${collapsed ? 'justify-center' : ''}`
@@ -168,7 +173,7 @@ function Sidebar({ collapsed, onToggle }) {
 }
 
 // ─── Top Bar ─────────────────────────────────────────────────────────────────
-function TopBar() {
+function TopBar({ mobileMenuOpen, onMobileMenuToggle }) {
   const { t } = useApp();
 
   const pageTitles = {
@@ -182,19 +187,33 @@ function TopBar() {
   const page = pageTitles[path] || { title: 'HealthSathi', sub: '' };
 
   return (
-    <header className="h-16 bg-white border-b border-teal-200 flex items-center justify-between px-6 flex-shrink-0 shadow-sm">
-      <div>
-        <h2 className="text-gray-900 font-bold text-lg leading-tight">{page.title}</h2>
-        {page.sub && <p className="text-teal-600 text-xs mt-0.5 font-medium">{page.sub}</p>}
-      </div>
-      <div className="flex items-center gap-3">
-        {/* Status pill */}
-        <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 rounded-full px-3 py-1.5 shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-emerald-700 text-xs font-semibold">System Online</span>
+    <header className="h-16 bg-white border-b border-teal-200 flex items-center justify-between px-4 md:px-6 flex-shrink-0 shadow-sm">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={onMobileMenuToggle}
+          className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-teal-50 text-teal-600 transition-colors"
+          title="Toggle Menu"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <div className="min-w-0">
+          <h2 className="text-gray-900 font-bold text-base md:text-lg leading-tight truncate">{page.title}</h2>
+          {page.sub && <p className="text-teal-600 text-xs mt-0.5 font-medium hidden sm:block">{page.sub}</p>}
         </div>
-        {/* Date */}
-        <span className="text-teal-600 text-xs font-medium">
+      </div>
+
+      <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+        {/* Status pill - hidden on small screens */}
+        <div className="hidden sm:flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 rounded-full px-3 py-1.5 shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-emerald-700 text-xs font-semibold">Online</span>
+        </div>
+        {/* Date - hidden on extra small screens */}
+        <span className="hidden xs:inline text-teal-600 text-xs font-medium whitespace-nowrap">
           {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
         </span>
       </div>
@@ -206,6 +225,7 @@ function TopBar() {
 function AppShell() {
   const { isAuthenticated } = useApp();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!isAuthenticated) {
     return (
@@ -219,9 +239,32 @@ function AppShell() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      {/* Desktop Sidebar (hidden on mobile) */}
+      <div className="hidden md:flex">
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <button
+          data-mobile-close
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden cursor-default"
+          style={{ pointerEvents: 'auto' }}
+        />
+      )}
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-teal-900 to-slate-800 border-r border-teal-700/50 w-64 z-50 transform transition-transform duration-300 md:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <Sidebar collapsed={false} onToggle={() => setMobileMenuOpen(false)} />
+      </div>
+
       <div className="flex flex-col flex-1 overflow-hidden">
-        <TopBar />
+        <TopBar mobileMenuOpen={mobileMenuOpen} onMobileMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)} />
         <main className="flex-1 overflow-hidden">
           <Routes>
             <Route path="/" element={<Navigate to="/chat" replace />} />

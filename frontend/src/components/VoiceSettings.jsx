@@ -70,22 +70,22 @@ export default function VoiceSettings() {
       {/* Settings Button */}
       <button
         onClick={() => setShowSettings(!showSettings)}
-        className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-white shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
+        className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-white shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
         title="Voice Settings"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m3.08 3.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m3.08-3.08l4.24-4.24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
       {/* Settings Panel */}
       {showSettings && (
-        <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-2xl border border-gray-200 w-72 p-5 space-y-4">
-          <h3 className="font-bold text-gray-800 text-lg">Voice Settings</h3>
+        <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-2xl border border-gray-200 w-64 sm:w-72 p-4 sm:p-5 space-y-4 max-w-[calc(100vw-32px)]">
+          <h3 className="font-bold text-gray-800 text-base sm:text-lg">Voice Settings</h3>
 
           {/* TTS Enable/Disable */}
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-xs sm:text-sm font-medium text-gray-700">
               Text-to-Speech
             </label>
             <button
@@ -101,7 +101,7 @@ export default function VoiceSettings() {
           {/* Speech Rate Control */}
           {ttsEnabled && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-xs sm:text-sm font-medium text-gray-700">
                 Speech Rate: {speechRate.toFixed(1)}x
               </label>
               <input
@@ -124,7 +124,7 @@ export default function VoiceSettings() {
           {/* Stop Speech Button */}
           <button
             onClick={handleStopSpeech}
-            className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+            className="w-full px-3 sm:px-4 py-2 bg-red-100 text-red-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-200 transition-colors"
           >
             Stop Current Speech
           </button>
@@ -134,7 +134,7 @@ export default function VoiceSettings() {
             <p className="text-xs font-semibold text-gray-600 uppercase">Data Logging</p>
             <button
               onClick={handleGetLogs}
-              className="w-full px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
+              className="w-full px-3 sm:px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-200 transition-colors"
             >
               View Logs ({ttsService.getLogs().length})
             </button>
@@ -142,13 +142,13 @@ export default function VoiceSettings() {
               <>
                 <button
                   onClick={handleExportLogs}
-                  className="w-full px-4 py-2 bg-green-100 text-green-600 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
+                  className="w-full px-3 sm:px-4 py-2 bg-green-100 text-green-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-200 transition-colors"
                 >
-                  Export Logs as JSON
+                  Export Logs
                 </button>
                 <button
                   onClick={handleClearLogs}
-                  className="w-full px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                  className="w-full px-3 sm:px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
                   Clear Logs
                 </button>

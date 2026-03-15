@@ -57,6 +57,14 @@ export function AppProvider({ children }) {
 
   // Auth functions
   const login = useCallback((userData, authToken) => {
+    // Clear previous user's session data
+    setMessages([]);
+    setLocation(null);
+    setLocationError(null);
+    setRecommendedFacilityType(null);
+    setRecommendedFacilities([]);
+    
+    // Set new user auth
     setUser(userData);
     setToken(authToken);
     setIsAuthenticated(true);
@@ -67,6 +75,14 @@ export function AppProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    // Clear all session data
+    setMessages([]);
+    setLocation(null);
+    setLocationError(null);
+    setRecommendedFacilityType(null);
+    setRecommendedFacilities([]);
+    
+    // Clear auth
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);

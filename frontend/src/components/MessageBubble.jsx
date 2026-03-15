@@ -9,15 +9,15 @@ export default function MessageBubble({ message }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       {!isUser && (
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold mr-3 flex-shrink-0 mt-0.5 shadow-md">
+        <div className="w-8 md:w-11 h-8 md:h-11 rounded-lg md:rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-xs md:text-sm font-bold mr-2 md:mr-3 flex-shrink-0 mt-0.5 shadow-md">
           H
         </div>
       )}
 
-      <div className={`max-w-[75%] space-y-3`}>
+      <div className={`max-w-[85%] md:max-w-[75%] space-y-3`}>
         {/* Text bubble */}
         <div
-          className={`px-5 py-3.5 rounded-2xl text-sm leading-relaxed font-medium transition-all ${
+          className={`px-4 md:px-5 py-3 md:py-3.5 rounded-xl md:rounded-2xl text-sm leading-relaxed font-medium transition-all ${
             isUser
               ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-tr-sm shadow-md hover:shadow-lg'
               : error
@@ -46,7 +46,7 @@ export default function MessageBubble({ message }) {
       </div>
 
       {isUser && (
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold ml-3 flex-shrink-0 mt-0.5 shadow-md">
+        <div className="w-8 md:w-11 h-8 md:h-11 rounded-lg md:rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs md:text-sm font-bold ml-2 md:ml-3 flex-shrink-0 mt-0.5 shadow-md">
           You
         </div>
       )}

@@ -101,23 +101,23 @@ function DonutChart({ high = 0, medium = 0, low = 0, total = 0, t }) {
 // ─── Stat Hero Card ───────────────────────────────────────────────────────────
 function HeroStat({ label, value, icon, gradient, glow, badge }) {
   return (
-    <div className={`rounded-2xl p-5 relative overflow-hidden ${gradient} shadow-md`}>
+    <div className={`rounded-lg md:rounded-2xl p-4 md:p-5 relative overflow-hidden ${gradient} shadow-md`}>
       <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-20 blur-xl ${glow}`} />
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white text-lg">
+        <div className="flex items-center justify-between mb-2 md:mb-3">
+          <div className="w-8 md:w-10 h-8 md:h-10 rounded-lg md:rounded-xl bg-white/20 flex items-center justify-center text-white text-base md:text-lg">
             {icon}
           </div>
           {badge && (
-            <span className="text-white/80 text-xs font-semibold bg-white/20 px-2.5 py-1 rounded-full">
+            <span className="text-white/80 text-xs font-semibold bg-white/20 px-2 md:px-2.5 py-0.5 md:py-1 rounded-full">
               {badge}
             </span>
           )}
         </div>
-        <p className="text-3xl font-extrabold text-white tracking-tight">
+        <p className="text-xl md:text-3xl font-extrabold text-white tracking-tight">
           <AnimatedNumber value={value} />
         </p>
-        <p className="text-white/75 text-sm mt-1 font-medium">{label}</p>
+        <p className="text-white/75 text-xs md:text-sm mt-1 font-medium">{label}</p>
       </div>
     </div>
   );
@@ -128,16 +128,16 @@ function QuickAction({ icon, label, desc, color, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:border-teal-200 hover:shadow-md transition-all duration-200 text-left group w-full"
+      className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-lg md:rounded-2xl bg-white border border-gray-100 hover:border-teal-200 hover:shadow-md transition-all duration-200 text-left group w-full"
     >
-      <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center text-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
+      <div className={`w-10 md:w-12 h-10 md:h-12 rounded-lg md:rounded-xl ${color} flex items-center justify-center text-lg md:text-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
         {icon}
       </div>
-      <div>
-        <p className="font-semibold text-gray-900 text-sm">{label}</p>
+      <div className="min-w-0">
+        <p className="font-semibold text-gray-900 text-xs md:text-sm">{label}</p>
         <p className="text-gray-400 text-xs mt-0.5">{desc}</p>
       </div>
-      <svg className="w-4 h-4 text-gray-300 group-hover:text-teal-500 ml-auto transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg className="w-4 h-4 text-gray-300 group-hover:text-teal-500 ml-auto transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
       </svg>
     </button>
@@ -232,59 +232,40 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50">
-      <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
+      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-6 animate-fade-in">
 
         {/* ── Hero stats row ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
           {heroStats.map((s) => (
             <HeroStat key={s.label} {...s} />
           ))}
         </div>
 
         {/* ── Middle row ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
 
           {/* Donut chart card */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900">{t.dashboard?.riskDistribution || 'Risk Distribution'}</h3>
+              <h3 className="font-bold text-sm md:text-base text-gray-900">{t.dashboard?.riskDistribution || 'Risk Distribution'}</h3>
               <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">{t.dashboard?.allTime || 'All time'}</span>
             </div>
             <DonutChart high={dist.HIGH} medium={dist.MEDIUM} low={dist.LOW} total={total} t={t} />
           </div>
 
           {/* Districts leaderboard */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900">{t.dashboard?.districts || 'Districts by Sessions'}</h3>
-              {stats.districts?.length > 0 && (
-                <span className="text-xs text-gray-400">{stats.districts.length} {t.dashboard?.badgeDistricts || 'districts'}</span>
-              )}
+          <div className="lg:col-span-2 bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
+            <div className="mb-4">
+              <h3 className="font-bold text-sm md:text-base text-gray-900">{t.dashboard?.districts || 'Districts by Sessions'}</h3>
             </div>
 
             {stats.districts && stats.districts.length > 0 ? (
-              <div className="space-y-3">
-                {stats.districts.slice(0, 8).map((d, idx) => {
-                  const pct = total > 0 ? Math.round((d.count / total) * 100) : 0;
-                  const barColors = ['bg-teal-500', 'bg-cyan-500', 'bg-blue-500', 'bg-indigo-500'];
-                  const color = barColors[idx % barColors.length];
-                  return (
-                    <div key={d.name} className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-gray-400 w-5 text-right">{idx + 1}</span>
-                      <span className="text-sm font-medium text-gray-700 w-36 truncate">{d.name}</span>
-                      <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                        <div
-                          className={`${color} h-2.5 rounded-full transition-all duration-700`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className="text-xs font-bold text-gray-700 w-6 text-right">{d.count}</span>
-                        <span className="text-xs text-gray-400 w-9">{pct}%</span>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {stats.districts.slice(0, 10).map((d, idx) => (
+                  <div key={d.name} className="flex items-center gap-2">
+                    <span className="text-xs md:text-sm font-medium text-gray-700">📍 {d.name}</span>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
@@ -295,11 +276,11 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Bottom row ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6">
+            <h3 className="font-bold text-sm md:text-base text-gray-900 mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <QuickAction
                 icon="💬" label="Start New Chat"
@@ -323,8 +304,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Risk gauge & key metric */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-            <h3 className="font-bold text-gray-900">Risk Breakdown</h3>
+          <div className="bg-white rounded-xl md:rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 space-y-4">
+            <h3 className="font-bold text-sm md:text-base text-gray-900">Risk Breakdown</h3>
             {total > 0 ? (
               <div className="space-y-3">
                 {[
@@ -333,7 +314,7 @@ export default function DashboardPage() {
                   { label: 'Low Risk',    count: dist.LOW    || 0, color: 'bg-emerald-500', pct: Math.round(((dist.LOW    || 0) / total) * 100) },
                 ].map(({ label, count, color, pct }) => (
                   <div key={label}>
-                    <div className="flex justify-between text-sm mb-1">
+                    <div className="flex justify-between text-xs md:text-sm mb-1">
                       <span className="font-medium text-gray-700">{label}</span>
                       <span className="font-bold text-gray-900">{count} <span className="text-gray-400 font-normal">({pct}%)</span></span>
                     </div>
@@ -348,23 +329,23 @@ export default function DashboardPage() {
             )}
 
             {topDistrict && (
-              <div className="mt-4 bg-teal-50 border border-teal-100 rounded-xl p-3">
+              <div className="mt-4 bg-teal-50 border border-teal-100 rounded-lg md:rounded-xl p-3">
                 <p className="text-xs text-teal-600 font-semibold uppercase tracking-wide">Top District</p>
-                <p className="font-bold text-teal-800 mt-0.5">{topDistrict.name}</p>
+                <p className="font-bold text-teal-800 mt-0.5 text-sm">{topDistrict.name}</p>
                 <p className="text-teal-600 text-xs">{topDistrict.count} sessions</p>
               </div>
             )}
           </div>
 
           {/* Health Tip */}
-          <div className="rounded-2xl bg-gradient-to-br from-teal-600 to-cyan-600 p-6 text-white shadow-md relative overflow-hidden">
+          <div className="rounded-xl md:rounded-2xl bg-gradient-to-br from-teal-600 to-cyan-600 p-4 md:p-6 text-white shadow-md relative overflow-hidden">
             <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-xl" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">{tip.icon}</span>
+                <span className="text-xl md:text-2xl">{tip.icon}</span>
                 <span className="text-white/80 text-xs font-semibold uppercase tracking-wide">Health Tip of the Day</span>
               </div>
-              <p className="text-white text-sm leading-relaxed font-medium">{tip.tip}</p>
+              <p className="text-white text-xs md:text-sm leading-relaxed font-medium">{tip.tip}</p>
               <div className="mt-4 flex items-center gap-2">
                 <span className="text-white/60 text-xs">Powered by HealthSathi AI</span>
               </div>
