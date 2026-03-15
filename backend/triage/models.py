@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import hashlib
+from .user_profile import UserProfile
 
 
 class TriageSession(models.Model):

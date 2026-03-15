@@ -11,7 +11,8 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     UserSerializer,
-    TriageSessionSerializer
+    TriageSessionSerializer,
+    UserProfileSerializer
 )
 from .ai_client import analyze_symptoms
 from .database_client import save_triage_session, get_real_stats
@@ -44,10 +45,20 @@ class RegisterView(APIView):
         user = serializer.save()
         token, _ = Token.objects.get_or_create(user=user)
         
+        # Get user profile data
+        profile_data = {}
+        if hasattr(user, 'profile'):
+            profile_data = {
+                'phone_number': user.profile.phone_number,
+                'blood_group': user.profile.blood_group,
+            }
+        
         return Response({
             'user': UserSerializer(user).data,
             'token': token.key,
             'session_token': token.key,
+            'phone_number': profile_data.get('phone_number', ''),
+            'blood_group': profile_data.get('blood_group', ''),
             'message': 'User registered successfully'
         }, status=status.HTTP_201_CREATED)
 
@@ -95,6 +106,55 @@ class LogoutView(APIView):
         return Response(
             {"error": "Not authenticated"},
             status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+class GetUpdateProfileView(APIView):
+    """Get and update user profile (phone number and blood group)"""
+    
+    def get(self, request):
+        """Get current user's profile"""
+        user = _get_authenticated_user(request)
+        if not user:
+            return Response(
+                {"error": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        profile = getattr(user, 'profile', None)
+        if not profile:
+            return Response(
+                {"error": "User profile not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        """Update phone_number and blood_group"""
+        user = _get_authenticated_user(request)
+        if not user:
+            return Response(
+                {"error": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        profile = getattr(user, 'profile', None)
+        if not profile:
+            return Response(
+                {"error": "User profile not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(
+            {"error": serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 

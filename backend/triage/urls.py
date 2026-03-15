@@ -5,6 +5,7 @@ from .views import (
     RegisterView,
     LoginView,
     LogoutView,
+    GetUpdateProfileView,
     HistoryView,
     ChromaDBStatsView,
     UserContextView
@@ -15,6 +16,7 @@ urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="register"),
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
+    path("profile/", GetUpdateProfileView.as_view(), name="profile"),
     path("triage/", TriageView.as_view(), name="triage"),
     path('stats/', StatsView.as_view(), name='stats'),
     path('baato/',          BaatoView.as_view()),

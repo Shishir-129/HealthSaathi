@@ -47,6 +47,16 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(min_length=6, write_only=True, required=True)
     confirm_password = serializers.CharField(min_length=6, write_only=True, required=True)
+    phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True, default='')
+    blood_group = serializers.CharField(max_length=5, required=False, allow_blank=True, default='')
+
+    def validate_blood_group(self, value):
+        """Validate blood group is one of allowed choices or empty"""
+        if value and value not in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']:
+            raise serializers.ValidationError(
+                "Invalid blood group. Must be one of: A+, A-, B+, B-, AB+, AB-, O+, O-"
+            )
+        return value
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -62,6 +72,13 @@ class RegisterSerializer(serializers.Serializer):
             first_name=validated_data['name'],
             password=validated_data['password']
         )
+        
+        # Save phone number and blood group to UserProfile
+        if hasattr(user, 'profile'):
+            user.profile.phone_number = validated_data.get('phone_number', '')
+            user.profile.blood_group = validated_data.get('blood_group', '')
+            user.profile.save()
+        
         return user
 
 
@@ -74,3 +91,27 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name']
+
+
+class UserProfileSerializer(serializers.Serializer):
+    """Serializer for user profile with phone and blood group"""
+    id = serializers.IntegerField(source='user.id', read_only=True)
+    name = serializers.CharField(source='user.first_name', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True)
+    blood_group = serializers.CharField(max_length=5, required=False, allow_blank=True)
+    
+    def validate_blood_group(self, value):
+        """Validate blood group is one of allowed choices or empty"""
+        if value and value not in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']:
+            raise serializers.ValidationError(
+                "Invalid blood group. Must be one of: A+, A-, B+, B-, AB+, AB-, O+, O-"
+            )
+        return value
+    
+    def update(self, instance, validated_data):
+        """Update phone_number and blood_group only"""
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.blood_group = validated_data.get('blood_group', instance.blood_group)
+        instance.save()
+        return instance
