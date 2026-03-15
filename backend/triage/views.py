@@ -13,7 +13,7 @@ from .serializers import (
     UserSerializer
 )
 from .ai_client import analyze_symptoms
-from .supabase_client import save_triage_session, get_real_stats
+from .database_client import save_triage_session, get_real_stats
 
 
 class RegisterView(APIView):
@@ -108,7 +108,7 @@ class TriageView(APIView):
         recommended_type = RISK_TO_FACILITY_TYPE.get(result.get("risk", "MEDIUM"), "pharmacy")
         result["recommended_facility_type"] = recommended_type
 
-        # 2. Save to Supabase
+        # 2. Save to PostgreSQL
         save_triage_session(
     symptoms        = symptoms,
     risk_level      = result["risk"],

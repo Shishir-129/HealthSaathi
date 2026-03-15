@@ -1,11 +1,7 @@
 from django.urls import path
 from .views import (
     TriageView,
-    StatsView,
-    RegisterView,
-    LoginView,
-    LogoutView,
-    HistoryView
+    StatsView
 )
 from .baato import BaatoView
 
