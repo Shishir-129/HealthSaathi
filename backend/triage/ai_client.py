@@ -73,25 +73,36 @@ def analyze_symptoms(symptoms: str) -> dict:
     if cache_result and cache_result["cached"]:
         cached_response = cache_result["response"]
         try:
-            return json.loads(cached_response)
+            parsed = json.loads(cached_response)
+            parsed["_source"] = "cache"
+            parsed["_cache_hit"] = True
+            if cache_result.get("metadata"):
+                parsed["_cached_from"] = cache_result["metadata"].get("llm_source", "unknown")
+            return parsed
         except json.JSONDecodeError:
             return {"error": "Invalid cached response", "original": cached_response}
 
     # ── STEP 2: Try Groq ─────────────────────────
     result = _try_groq(symptoms)
     if result:
-        ChromaDBManager.save_to_cache(symptoms, result)
+        ChromaDBManager.save_to_cache(symptoms, result, metadata={"llm_source": "groq"})
+        result["_source"] = "groq"
+        result["_cache_hit"] = False
         return result
 
     # ── STEP 3: Fallback to Gemini ──────────────
     result = _try_gemini(symptoms)
     if result:
-        ChromaDBManager.save_to_cache(symptoms, result)
+        ChromaDBManager.save_to_cache(symptoms, result, metadata={"llm_source": "gemini"})
+        result["_source"] = "gemini"
+        result["_cache_hit"] = False
         return result
 
     # ── STEP 4: Final fallback ─────────────────
     fallback = _fallback_response()
-    ChromaDBManager.save_to_cache(symptoms, fallback)
+    ChromaDBManager.save_to_cache(symptoms, fallback, metadata={"llm_source": "fallback"})
+    fallback["_source"] = "fallback"
+    fallback["_cache_hit"] = False
     return fallback
 
 

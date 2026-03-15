@@ -2,13 +2,14 @@ import chromadb
 import json
 import hashlib
 import os
+import unicodedata
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Initialize ChromaDB with persistent storage
-chroma_db_path = Path(__file__).resolve().parent.parent.parent / "chromadb_data"
+chroma_db_path = Path(__file__).resolve().parent.parent.parent /"backend" / "chromadb_data"
 chroma_db_path.mkdir(parents=True, exist_ok=True)
 
 chroma_client = chromadb.PersistentClient(path=str(chroma_db_path))
@@ -35,6 +36,13 @@ knowledge_collection = chroma_client.get_or_create_collection(
 
 class ChromaDBManager:
     """Manager class for ChromaDB operations"""
+
+    @staticmethod
+    def _normalize_query_text(text: str) -> str:
+        """Normalize text for stable semantic caching."""
+        normalized = unicodedata.normalize("NFKC", text or "")
+        normalized = " ".join(normalized.strip().split())
+        return normalized.lower()
     
     @staticmethod
     def check_cache(query: str, threshold: float = 0.15) -> dict | None:
@@ -43,15 +51,24 @@ class ChromaDBManager:
         Returns cached response if found, None otherwise.
         """
         try:
-            results = cache_collection.query(query_texts=[query], n_results=1)
+            normalized_query = ChromaDBManager._normalize_query_text(query)
+            results = cache_collection.query(
+                query_texts=[normalized_query],
+                where={"record_type": "query_cache"},
+                n_results=1
+            )
             
             if results['distances'] and results['distances'][0]:
                 distance = results['distances'][0][0]
                 
                 # Lower distance = more similar (0 = identical, 1 = completely different)
                 if distance < threshold:
-                    cached_response = results['documents'][0][0]
                     metadata = results['metadatas'][0][0] if results['metadatas'][0] else {}
+                    cached_response = metadata.get("response_json")
+
+                    if not cached_response:
+                        # Backward-compatibility for legacy entries where response lived in documents
+                        cached_response = results['documents'][0][0]
                     
                     print(f"✅ Cache HIT (similarity: {1 - distance:.2%})")
                     return {
@@ -60,6 +77,9 @@ class ChromaDBManager:
                         "metadata": metadata,
                         "similarity_score": 1 - distance
                     }
+                print(f"🟡 Cache MISS (closest similarity: {1 - distance:.2%}, threshold: {1 - threshold:.2%})")
+            else:
+                print("🟡 Cache MISS (no vectors found yet)")
         except Exception as e:
             print(f"⚠️  Cache check error: {e}")
         
@@ -94,16 +114,20 @@ class ChromaDBManager:
         Save query-response pair to global semantic cache.
         """
         try:
-            query_hash = hashlib.md5(query.lower().encode()).hexdigest()
+            normalized_query = ChromaDBManager._normalize_query_text(query)
+            query_hash = hashlib.md5(normalized_query.encode()).hexdigest()
             response_str = json.dumps(response)
             
             meta = metadata or {}
             meta["original_query"] = query
+            meta["normalized_query"] = normalized_query
+            meta["response_json"] = response_str
+            meta["record_type"] = "query_cache"
             meta["cached_at"] = str(__import__('datetime').datetime.now())
             
-            cache_collection.add(
+            cache_collection.upsert(
                 ids=[f"cache_{query_hash}"],
-                documents=[response_str],
+                documents=[normalized_query],
                 metadatas=[meta]
             )
             print(f"💾 Saved to cache: {query[:50]}...")
