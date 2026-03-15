@@ -21,7 +21,7 @@ knowledge_collection = None
 if chromadb is not None:
     try:
         # Initialize ChromaDB with persistent storage
-        chroma_db_path = Path(__file__).resolve().parent.parent.parent / "chromadb_data"
+        chroma_db_path = Path(__file__).resolve().parent.parent.parent /"backend"/ "chromadb_data"
         chroma_db_path.mkdir(parents=True, exist_ok=True)
 
         chroma_client = chromadb.PersistentClient(path=str(chroma_db_path))
