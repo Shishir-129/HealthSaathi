@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink, Navigate, useNavigate } from 're
 import { AppProvider } from './context/AppContext';
 import { useApp } from './context/AppContext';
 import LanguageToggle from './components/LanguageToggle';
+import VoiceSettings from './components/VoiceSettings';
 import ChatPage from './pages/ChatPage';
 import MapPage from './pages/MapPage';
 import DashboardPage from './pages/DashboardPage';
@@ -233,6 +234,8 @@ function AppShell() {
           </Routes>
         </main>
       </div>
+      {/* Voice Settings always available for authenticated users */}
+      <VoiceSettings />
     </div>
   );
 }

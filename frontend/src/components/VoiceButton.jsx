@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useApp } from '../context/AppContext';
 
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -6,6 +7,7 @@ const SpeechRecognition =
 export default function VoiceButton({ onTranscript, disabled }) {
   const [listening, setListening] = useState(false);
   const recogRef = useRef(null);
+  const { lang } = useApp();
 
   if (!SpeechRecognition) return null;
 
@@ -17,7 +19,8 @@ export default function VoiceButton({ onTranscript, disabled }) {
     }
 
     const recog = new SpeechRecognition();
-    recog.lang = 'en-US';
+    // Support both English and Nepali speech recognition
+    recog.lang = lang === 'np' ? 'ne-NP' : 'en-US';
     recog.interimResults = false;
     recog.maxAlternatives = 1;
 

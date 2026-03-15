@@ -1,5 +1,6 @@
 import React from 'react';
 import RiskCard from './RiskCard';
+import SpeakButton from './SpeakButton';
 
 export default function MessageBubble({ message }) {
   const { role, text, triageResult, error } = message;
@@ -26,6 +27,9 @@ export default function MessageBubble({ message }) {
         >
           {text}
         </div>
+
+        {/* Speak button (AI only) */}
+        {!isUser && !error && <SpeakButton text={text} />}
 
         {/* Triage result card (AI only) */}
         {triageResult && (
