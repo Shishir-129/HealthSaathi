@@ -43,7 +43,7 @@ export default function ChatPage() {
 
   const handleDeleteConsultation = async (session, e) => {
     e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this consultation?')) return;
+    if (!window.confirm(t.sidebar.deleteConfirm)) return;
     try {
       await deleteConsultation(session.session_id || session.conversation_id);
       fetchChatHistory();
@@ -52,7 +52,7 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Failed to delete consultation:', error);
-      alert('Failed to delete consultation');
+      alert(t.common.deleteFailed);
     }
   };
 
@@ -74,7 +74,7 @@ export default function ChatPage() {
         // Add the AI response with triageResult for RiskCard formatting
         addMessage({
           role: 'ai',
-          text: 'Here is your consultation result:',
+          text: t.chat.here,
           triageResult: {
             risk: s.risk_level,
             brief_advice: s.brief_advice,
@@ -94,7 +94,7 @@ export default function ChatPage() {
       addMessage({ role: 'user', text: session.symptoms });
       addMessage({
         role: 'ai',
-        text: 'Here is your consultation result:',
+        text: t.chat.here,
         triageResult: {
           risk: session.risk_level,
           brief_advice: session.brief_advice,
@@ -153,7 +153,7 @@ export default function ChatPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            Collapse
+            {t.sidebar.collapse}
           </button>
 
           {/* New Consultation Button */}
@@ -161,7 +161,7 @@ export default function ChatPage() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            New Consultation
+            {t.sidebar.newConsultation}
           </button>
 
           {/* Chat History */}
@@ -170,7 +170,7 @@ export default function ChatPage() {
               onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
               className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
             >
-              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">📋 Recent Consultations</h3>
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">📋 {t.sidebar.recentConsultations}</h3>
               <svg className={`w-5 h-5 text-gray-600 transition-transform ${isHistoryCollapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7-7m0 0L5 14m7-7v12" />
               </svg>
@@ -185,7 +185,7 @@ export default function ChatPage() {
                       <div className="w-6 h-6 border-2 border-teal-300 border-t-teal-600 rounded-full animate-spin" />
                     </div>
                   ) : chatHistory.length === 0 ? (
-                    <p className="text-xs text-gray-500 text-center py-4">No consultations yet</p>
+                    <p className="text-xs text-gray-500 text-center py-4">{t.sidebar.noConsultations}</p>
                   ) : (
                     chatHistory.slice(0, 10).map((session, idx) => (
                       <div
@@ -209,7 +209,7 @@ export default function ChatPage() {
                               <span>{new Date(session.created_at).toLocaleDateString()}</span>
                               {session.session_count > 1 && (
                                 <span className="bg-teal-100 text-teal-700 px-1.5 rounded text-xs font-semibold">
-                                  {session.session_count} symptoms
+                                  {session.session_count} {t.sidebar.symptoms}
                                 </span>
                               )}
                             </p>
@@ -218,7 +218,7 @@ export default function ChatPage() {
                         <button
                           onClick={(e) => handleDeleteConsultation(session, e)}
                           className="px-3 py-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-r transition-all flex-shrink-0 opacity-0 group-hover:opacity-100"
-                          title="Delete consultation"
+                          title={t.sidebar.deleteConsultation}
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -239,7 +239,7 @@ export default function ChatPage() {
         <button
           onClick={() => setIsSidebarCollapsed(false)}
           className="hidden xl:flex items-center justify-center w-14 h-14 bg-white hover:bg-gray-100 rounded-full transition-all shadow-lg text-teal-600 hover:text-teal-700 flex-shrink-0 border border-gray-200 animate-in fade-in"
-          title="Expand sidebar"
+          title={t.sidebar.expand}
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -272,7 +272,7 @@ export default function ChatPage() {
                 <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-emerald-700 truncate">
-                    {placeData.loading ? 'Getting location...' : placeData.place}
+                    {placeData.loading ? t.location.getting : placeData.place}
                   </span>
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function ChatPage() {
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Refresh
+                {t.location.refresh}
               </button>
             </div>
           ) : (

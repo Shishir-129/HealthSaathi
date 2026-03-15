@@ -44,7 +44,7 @@ export default function MapPage() {
             <h2 className="font-bold text-gray-900">{t.map.title}</h2>
             {posts.length > 0 && !loading && (
               <p className="text-xs text-gray-400 mt-0.5">
-                {posts.length} facilities found
+                {posts.length} {t.map.facilitiesFound}
               </p>
             )}
           </div>

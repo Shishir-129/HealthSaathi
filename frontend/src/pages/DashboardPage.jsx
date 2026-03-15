@@ -24,9 +24,9 @@ function AnimatedNumber({ value }) {
 }
 
 // ─── Donut Arc SVG ────────────────────────────────────────────────────────────
-function DonutChart({ high = 0, medium = 0, low = 0, total = 0 }) {
+function DonutChart({ high = 0, medium = 0, low = 0, total = 0, t }) {
   if (total === 0) return (
-    <div className="flex items-center justify-center h-48 text-slate-400 text-sm">No data yet</div>
+    <div className="flex items-center justify-center h-48 text-slate-400 text-sm">{t?.dashboard?.noData || 'No data yet'}</div>
   );
   const cx = 80, cy = 80, r = 58, strokeW = 18;
   const circ = 2 * Math.PI * r;
@@ -77,7 +77,7 @@ function DonutChart({ high = 0, medium = 0, low = 0, total = 0 }) {
         )}
         {/* Center */}
         <text x={cx} y={cy - 6}  textAnchor="middle" fill="#0f172a" fontSize="22" fontWeight="700">{total}</text>
-        <text x={cx} y={cy + 14} textAnchor="middle" fill="#94a3b8" fontSize="10">total</text>
+        <text x={cx} y={cy + 14} textAnchor="middle" fill="#94a3b8" fontSize="10">{t?.dashboard?.total?.toLowerCase() || 'total'}</text>
       </svg>
 
       {/* Legend */}
@@ -200,7 +200,7 @@ export default function DashboardPage() {
       icon:  '🩺',
       gradient: 'bg-gradient-to-br from-teal-500 to-teal-700',
       glow:  'bg-teal-300',
-      badge: 'All time',
+      badge: t.dashboard?.allTime || 'All time',
     },
     {
       label: t.dashboard?.high || 'High Risk',
@@ -247,10 +247,10 @@ export default function DashboardPage() {
           {/* Donut chart card */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900">Risk Distribution</h3>
-              <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">All time</span>
+              <h3 className="font-bold text-gray-900">{t.dashboard?.riskDistribution || 'Risk Distribution'}</h3>
+              <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">{t.dashboard?.allTime || 'All time'}</span>
             </div>
-            <DonutChart high={dist.HIGH} medium={dist.MEDIUM} low={dist.LOW} total={total} />
+            <DonutChart high={dist.HIGH} medium={dist.MEDIUM} low={dist.LOW} total={total} t={t} />
           </div>
 
           {/* Districts leaderboard */}
@@ -258,7 +258,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-gray-900">{t.dashboard?.districts || 'Districts by Sessions'}</h3>
               {stats.districts?.length > 0 && (
-                <span className="text-xs text-gray-400">{stats.districts.length} districts</span>
+                <span className="text-xs text-gray-400">{stats.districts.length} {t.dashboard?.badgeDistricts || 'districts'}</span>
               )}
             </div>
 
@@ -288,7 +288,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
-                No district data yet
+                {t.dashboard?.noDistrictData || 'No district data yet'}
               </div>
             )}
           </div>
