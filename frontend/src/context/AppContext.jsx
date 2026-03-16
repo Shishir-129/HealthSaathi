@@ -12,6 +12,7 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [recommendedFacilityType, setRecommendedFacilityType] = useState(null);
   const [recommendedFacilities, setRecommendedFacilities] = useState([]);
+  const [conversationId, setConversationId] = useState(null); // 🧠 For memory system
   
   // Auth state
   const [user, setUser] = useState(null);
@@ -63,6 +64,7 @@ export function AppProvider({ children }) {
     setLocationError(null);
     setRecommendedFacilityType(null);
     setRecommendedFacilities([]);
+    setConversationId(null); // 🧠 Clear conversation on login
     
     // Set new user auth
     setUser(userData);
@@ -81,6 +83,7 @@ export function AppProvider({ children }) {
     setLocationError(null);
     setRecommendedFacilityType(null);
     setRecommendedFacilities([]);
+    setConversationId(null); // 🧠 Clear conversation on logout
     
     // Clear auth
     setUser(null);
@@ -105,6 +108,7 @@ export function AppProvider({ children }) {
         setRecommendedFacilityType,
         recommendedFacilities,
         setRecommendedFacilities,
+        conversationId, setConversationId, // 🧠 Memory system
         user, token, isAuthenticated,
         login, logout,
       }}

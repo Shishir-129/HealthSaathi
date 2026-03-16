@@ -16,7 +16,7 @@ from .serializers import (
     TriageSessionSerializer,
     UserProfileSerializer
 )
-from .ai_client import analyze_symptoms
+from .ai_client import analyze_symptoms, get_ai_response_with_memory
 from .database_client import save_triage_session, get_real_stats
 from .chromadb import ChromaDBManager
 from .image_client import (
@@ -169,7 +169,13 @@ class GetUpdateProfileView(APIView):
 
 class TriageView(APIView):
     def post(self, request):
+        from .models import Conversation
+        import uuid
+        
         auth_user = _get_authenticated_user(request)
+        print(f"\n📌 TriageView.post() called")
+        print(f"   🔐 Authenticated user: {auth_user.username if auth_user else 'NONE (unauthenticated)'}")
+        
         serializer = TriageRequestSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -184,47 +190,89 @@ class TriageView(APIView):
         district = serializer.validated_data.get("district", "")
         session_id = serializer.validated_data.get("session_id", "")
         conversation_id = serializer.validated_data.get("conversation_id")
+        
+        print(f"   📝 Symptoms: {symptoms[:50]}...")
+        print(f"   💬 Conversation ID received: {conversation_id}")
 
-        # 1. AI result
-        result = analyze_symptoms(symptoms)
+        # Ensure conversation exists or create one
+        if conversation_id:
+            try:
+                conversation = Conversation.objects.get(id=conversation_id)
+                print(f"   ✓ Found existing conversation: {conversation_id}")
+            except Conversation.DoesNotExist:
+                conversation = Conversation.objects.create(
+                    id=uuid.UUID(conversation_id),
+                    user=auth_user,
+                    title=symptoms[:100]
+                )
+                print(f"   ⚠️ Conversation not found, created new one: {conversation_id}")
+        else:
+            # Create new conversation
+            conversation = Conversation.objects.create(
+                user=auth_user,
+                title=symptoms[:100]
+            )
+            conversation_id = str(conversation.id)
+            print(f"   ✨ NEW conversation created: {conversation_id}")
 
-        # Map risk to facility type
-        RISK_TO_FACILITY_TYPE = {
-            "HIGH": "hospital",
-            "MEDIUM": "pharmacy",
-            "LOW": "clinic",
-        }
-        recommended_type = RISK_TO_FACILITY_TYPE.get(result.get("risk", "MEDIUM"), "pharmacy")
-        result["recommended_facility_type"] = recommended_type
+        # 1. AI result - use memory-aware function if authenticated
+        if auth_user:
+            print(f"   🧠 Using MEMORY-AWARE response (authenticated)")
+            result = get_ai_response_with_memory(
+                user_query=symptoms,
+                conversation_id=conversation_id,
+                user_id=auth_user.id
+            )
+        else:
+            print(f"   ⚠️  Using STATELESS response (NOT authenticated - NO MEMORY)")
+            result = analyze_symptoms(symptoms)
 
-        # 2. Save to PostgreSQL
-        saved_session = save_triage_session(
-            symptoms        = symptoms,
-            risk_level      = result["risk"],
-            advice          = result.get("brief_advice", ""),
-            action          = result.get("dos", ""),
-            nepali_advice   = result.get("nepali_advice", ""),
-            brief_advice    = result.get("brief_advice", ""),
-            detailed_advice = result.get("detailed_advice", ""),
-            food_eat        = result.get("food_eat", ""),
-            food_avoid      = result.get("food_avoid", ""),
-            dos             = result.get("dos", ""),
-            donts           = result.get("donts", ""),
-            district        = district,
-            latitude        = lat,
-            longitude       = lng,
-            user_id         = auth_user.id if auth_user else None,
-            user_email      = auth_user.email if auth_user else "",
-            session_id      = session_id,
-            conversation_id = conversation_id,
-        )
+        # Check if response is structured (has risk field) or plain text conversational
+        is_structured_response = "risk" in result and result.get("risk") in ["HIGH", "MEDIUM", "LOW"]
+        
+        if is_structured_response:
+            # Handle structured JSON response (triage format)
+            RISK_TO_FACILITY_TYPE = {
+                "HIGH": "hospital",
+                "MEDIUM": "pharmacy",
+                "LOW": "clinic",
+            }
+            recommended_type = RISK_TO_FACILITY_TYPE.get(result.get("risk", "MEDIUM"), "pharmacy")
+            result["recommended_facility_type"] = recommended_type
+
+            # Save to PostgreSQL (triage structure)
+            saved_session = save_triage_session(
+                symptoms        = symptoms,
+                risk_level      = result["risk"],
+                advice          = result.get("brief_advice", ""),
+                action          = result.get("dos", ""),
+                nepali_advice   = result.get("nepali_advice", ""),
+                brief_advice    = result.get("brief_advice", ""),
+                detailed_advice = result.get("detailed_advice", ""),
+                food_eat        = result.get("food_eat", ""),
+                food_avoid      = result.get("food_avoid", ""),
+                dos             = result.get("dos", ""),
+                donts           = result.get("donts", ""),
+                district        = district,
+                latitude        = lat,
+                longitude       = lng,
+                user_id         = auth_user.id if auth_user else None,
+                user_email      = auth_user.email if auth_user else "",
+                session_id      = session_id,
+                conversation_id = conversation_id,
+            )
+        else:
+            # Handle plain text conversational response (no triage structure)
+            print(f"   💬 Conversational text response (no JSON structure)")
+            result["text"] = result.get("response") or result.get("text") or ""
+            result["recommended_facility_type"] = None
 
         # Return the conversation_id for frontend to use in future requests
-        if saved_session and saved_session.conversation:
-            result["conversation_id"] = str(saved_session.conversation.id)
+        result["conversation_id"] = conversation_id
 
-        # 3. Save to ChromaDB for context awareness
-        if auth_user:
+        # Note: ChromaDB history is now saved automatically in get_ai_response_with_memory
+        # But we keep this for unauthenticated fallback path
+        if auth_user and not result.get("_memory_aware"):
             user_id = auth_user.id
             ChromaDBManager.save_to_history(
                 user_id=user_id,
@@ -232,6 +280,10 @@ class TriageView(APIView):
                 response=result,
                 risk_level=result.get("risk", "UNKNOWN")
             )
+        
+        print(f"   ✓ Response ready with conversation_id: {conversation_id}")
+        print(f"   ✓ Memory-aware: {result.get('_memory_aware', False)}")
+        print()
 
         return Response(result, status=status.HTTP_200_OK)
 
@@ -639,3 +691,118 @@ class RateLimitStatusView(APIView):
                 {"error": f"Failed to check rate limit: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class ConversationMemoryDiagnosticView(APIView):
+    """🔍 Diagnostic endpoint to inspect conversation memory"""
+    
+    def get(self, request, conversation_id=None):
+        """
+        Get detailed memory information for a conversation.
+        
+        Usage:
+            GET /api/conversation/{conversation_id}/memory-diagnostic/
+            
+        Returns:
+            - Conversation metadata
+            - All messages in conversation
+            - Token counts
+            - ChromaDB history entries
+            - Memory status
+        """
+        from .models import Conversation, ChatMessage
+        
+        user = _get_authenticated_user(request)
+        
+        if not conversation_id:
+            return Response(
+                {"error": "conversation_id required in URL path"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            conversation = Conversation.objects.get(id=conversation_id)
+            
+            # Only allow users to view their own conversation
+            if conversation.user and conversation.user != user:
+                return Response(
+                    {"error": "Unauthorized (not your conversation)"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Get all messages in conversation
+            messages = ChatMessage.objects.filter(
+                conversation_id=conversation_id
+            ).order_by('created_at').values()
+            
+            total_tokens = sum(msg['token_count'] for msg in messages)
+            
+            # Count messages by role
+            message_count = {}
+            for msg in messages:
+                role = msg['role']
+                message_count[role] = message_count.get(role, 0) + 1
+            
+            diagnostic_info = {
+                "status": "✅ Memory System OK" if messages.count() > 0 else "⚠️  No messages stored",
+                "conversation": {
+                    "id": str(conversation.id),
+                    "created_at": conversation.created_at.isoformat(),
+                    "updated_at": conversation.updated_at.isoformat(),
+                    "title": conversation.title,
+                    "user_id": conversation.user.id if conversation.user else None,
+                    "user_email": conversation.user.email if conversation.user else None,
+                },
+                "messages": {
+                    "total": messages.count(),
+                    "by_role": message_count,
+                    "total_tokens": total_tokens,
+                },
+                "message_list": list(messages),
+                "memory_instructions": {
+                    "requirement_1_authentication": {
+                        "required": True,
+                        "current_user_authenticated": bool(user),
+                        "note": "Memory only works for authenticated users"
+                    },
+                    "requirement_2_conversation_id_reuse": {
+                        "required": True,
+                        "conversation_id_stable": str(conversation.id),
+                        "note": "Always send this conversation_id in subsequent requests"
+                    },
+                    "requirement_3_messages_persisting": {
+                        "required": True,
+                        "messages_count": messages.count(),
+                        "ok": messages.count() > 0,
+                        "note": "Messages should be saved in database"
+                    }
+                },
+                "debug_instructions": f"""
+To verify memory is working:
+
+1. Get conversation ID from first API response
+2. Store this ID: {conversation.id}
+3. In next request, include: {{"conversation_id": "{conversation.id}"}}
+4. Check the "messages" array above to see stored conversation
+5. If empty (total: 0), messages aren't being saved!
+
+Troubleshooting:
+- If total=0: ChatMessage model not working
+- If total>0 but same answer for different symptoms: Make sure conversation_id is in request
+- Check logs: grep "_memory_aware" in server output
+""".strip()
+            }
+            
+            return Response(diagnostic_info, status=status.HTTP_200_OK)
+        
+        except Conversation.DoesNotExist:
+            return Response(
+                {"error": f"Conversation not found: {conversation_id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Diagnostic error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+

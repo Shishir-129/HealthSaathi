@@ -62,3 +62,27 @@ class TriageSession(models.Model):
                 self.symptoms.lower().strip().encode()
             ).hexdigest()
         super().save(*args, **kwargs)
+
+
+class ChatMessage(models.Model):
+    """Stores individual chat messages for conversation memory and context injection"""
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('assistant', 'Assistant'),
+        ('system', 'System'),
+    ]
+    
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    content = models.TextField()  # The actual message text
+    token_count = models.IntegerField(default=0)  # For token tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['conversation', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.role} - {self.conversation.id} - {self.created_at}"

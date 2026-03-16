@@ -14,6 +14,7 @@ from .views import (
     PDFProcessingView,
     ImageProcessingLogsView,
     RateLimitStatusView,
+    ConversationMemoryDiagnosticView,
 )
 from .baato import BaatoView
 
@@ -34,4 +35,6 @@ urlpatterns = [
     path('image/pdf/', PDFProcessingView.as_view(), name='pdf_processing'),
     path('image/logs/', ImageProcessingLogsView.as_view(), name='image_logs'),
     path('image/rate-limit/', RateLimitStatusView.as_view(), name='rate_limit_status'),
+    # Memory diagnostic endpoint
+    path('conversation/<str:conversation_id>/memory-diagnostic/', ConversationMemoryDiagnosticView.as_view(), name='memory_diagnostic'),
 ]
