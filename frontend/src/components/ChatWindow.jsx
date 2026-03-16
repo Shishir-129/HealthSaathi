@@ -54,6 +54,9 @@ export default function ChatWindow({ onConsultationSubmitted, conversationId, on
     setLoading(true);
     abortControllerRef.current = new AbortController();
     try {
+      // 🧠 Log memory system status
+      console.log(`🧠 [MEMORY] Sending triage request${localConversationId ? ` with conversation_id: ${localConversationId}` : ' (new conversation)'}`);
+      
       const result = await submitTriage(
         text, location?.lat ?? null, location?.lng ?? null,
         abortControllerRef.current.signal,
@@ -61,30 +64,48 @@ export default function ChatWindow({ onConsultationSubmitted, conversationId, on
         district
       );
       
+      // 🧠 Log response for memory awareness
+      console.log(`🧠 [MEMORY] Response indicates memory_aware: ${result._memory_aware || 'not set (unauthenticated?)'}`);
+      
       // Update conversation ID if returned from backend (for new conversations)
       if (result.conversation_id && !localConversationId) {
+        console.log(`🧠 [MEMORY] New conversation created: ${result.conversation_id}`);
         setLocalConversationId(result.conversation_id);
         if (onConversationIdChange) {
           onConversationIdChange(result.conversation_id);
         }
       }
       
-      const recommendedType = RISK_TO_FACILITY_TYPE[result?.risk] || 'clinic';
-      let facilities = [];
-      if (location?.lat != null && location?.lng != null) {
-        facilities = await getHealthPosts(location.lat, location.lng, recommendedType, 10);
+      // Check if response is JSON (structured triage) or plain text (conversational)
+      const isStructuredResponse = result?.risk && result?.brief_advice;
+      
+      if (isStructuredResponse) {
+        // Handle structured JSON response (triage format)
+        const recommendedType = RISK_TO_FACILITY_TYPE[result?.risk] || 'clinic';
+        let facilities = [];
+        if (location?.lat != null && location?.lng != null) {
+          facilities = await getHealthPosts(location.lat, location.lng, recommendedType, 10);
+        }
+        setRecommendedFacilityType(recommendedType);
+        setRecommendedFacilities(Array.isArray(facilities) ? facilities : []);
+        addMessage({
+          role: 'ai',
+          text: result.brief_advice || 'Analysis complete.',
+          triageResult: {
+            ...result,
+            recommended_facility_type: recommendedType,
+            recommended_facilities: Array.isArray(facilities) ? facilities : [],
+          },
+        });
+      } else {
+        // Handle plain text response (conversational)
+        const responseText = result?.response || result?.text || 'Response received.';
+        addMessage({
+          role: 'ai',
+          text: responseText,
+          // No triageResult for conversational responses
+        });
       }
-      setRecommendedFacilityType(recommendedType);
-      setRecommendedFacilities(Array.isArray(facilities) ? facilities : []);
-      addMessage({
-        role: 'ai',
-        text: result.brief_advice || 'Analysis complete.',
-        triageResult: {
-          ...result,
-          recommended_facility_type: recommendedType,
-          recommended_facilities: Array.isArray(facilities) ? facilities : [],
-        },
-      });
       
       // Refresh history after successful consultation submission
       if (onConsultationSubmitted) {

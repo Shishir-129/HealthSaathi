@@ -17,12 +17,16 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Token ${token}`;
       config.headers['X-Session-Token'] = token;
+      console.log(`🧠 [MEMORY] X-Session-Token included in request`);
+    } else {
+      console.warn(`⚠️ [MEMORY] No authentication token found - memory disabled!`);
     }
     console.log(`📡 ${config.method.toUpperCase()} ${config.url}`, {
       method: config.method,
       url: config.url,
       data: config.data,
-      params: config.params
+      params: config.params,
+      hasAuth: !!token
     });
     return config;
   },

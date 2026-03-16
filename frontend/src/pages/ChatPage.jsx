@@ -12,6 +12,7 @@ export default function ChatPage() {
     locationLoading, setLocationLoading,
     messages, clearMessages, addMessage,
     setRecommendedFacilityType, setRecommendedFacilities,
+    conversationId: contextConversationId, setConversationId,  // 🧠 Memory system
     user,
   } = useApp();
 
@@ -22,8 +23,19 @@ export default function ChatPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [sessionKey, setSessionKey] = useState(0);
-  const [conversationId, setConversationId] = useState(null);
+  const [conversationId, setLocalConversationId] = useState(null);  // Local state for ChatWindow
   const [showMobileHistory, setShowMobileHistory] = useState(false);
+
+  // 🧠 Sync local conversation ID with context
+  useEffect(() => {
+    setConversationId(conversationId);
+  }, [conversationId, setConversationId]);
+
+  // 🧠 Handler to update both local and context conversation ID
+  const handleConversationIdChange = (newConvId) => {
+    setLocalConversationId(newConvId);
+    setConversationId(newConvId);  // Update context
+  };
 
   const handleGetLocation = () => {
     setLocationLoading(true);
@@ -38,7 +50,8 @@ export default function ChatPage() {
     setRecommendedFacilityType(null);
     setRecommendedFacilities([]);
     setSelectedSession(null);
-    setConversationId(null);
+    setLocalConversationId(null);
+    setConversationId(null);  // 🧠 Clear in context
     setSessionKey(prev => prev + 1);
     fetchChatHistory();
   };
@@ -64,7 +77,8 @@ export default function ChatPage() {
     setRecommendedFacilityType(null);
     setRecommendedFacilities([]);
     setSelectedSession(session);
-    setConversationId(session.conversation_id || session.session_id);
+    setLocalConversationId(session.conversation_id || session.session_id);
+    setConversationId(session.conversation_id || session.session_id);  // 🧠 Set in context
     setSessionKey(prev => prev + 1);
 
     // Load all sessions from the conversation
@@ -123,9 +137,10 @@ export default function ChatPage() {
     clearMessages();
     setChatHistory([]);
     setSelectedSession(null);
-    setConversationId(null);
+    setLocalConversationId(null);
+    setConversationId(null);  // 🧠 Clear in context
     setSessionKey(prev => prev + 1);
-  }, [user?.id, clearMessages]);
+  }, [user?.id, clearMessages, setConversationId]);
 
   // Fetch place and city name when location changes
   useEffect(() => {
@@ -352,7 +367,7 @@ export default function ChatPage() {
 
         {/* Chat content */}
         <div className="flex-1 overflow-hidden bg-gray-100">
-          <ChatWindow key={sessionKey} conversationId={conversationId} district={placeData.city} onConversationIdChange={setConversationId} onConsultationSubmitted={fetchChatHistory} />
+          <ChatWindow key={sessionKey} conversationId={conversationId} district={placeData.city} onConversationIdChange={handleConversationIdChange} onConsultationSubmitted={fetchChatHistory} />
         </div>
 
 

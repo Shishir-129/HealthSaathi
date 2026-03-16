@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 FRONTEND_EXPLAINED.txt
 Nepalcare Frontend Doc.docx
 node_modules/
@@ -7,3 +8,7 @@ INTEGRATION_GUIDE.md
 FRONTEND_INTEGRATION_SUMMARY.md
 .env
 .env.local
+=======
+.env.local
+node_modules/
+>>>>>>> prashant/context

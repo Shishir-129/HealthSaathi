@@ -11,6 +11,14 @@ chromadb==1.5.5
 baato==1.0.1
 gunicorn==20.1.0
 # Image and PDF processing
+<<<<<<< HEAD
 Pillow==10.4.0
 PyPDF2==3.0.1
 pdf2image==1.16.3
+=======
+Pillow==11.0.0
+PyPDF2==4.0.1
+pdf2image==1.16.3
+# Token counting for LLM context management
+tiktoken==0.5.2
+>>>>>>> prashant/context
