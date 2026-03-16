@@ -2,7 +2,7 @@
 
 ## Summary of Changes
 
-ChromaDB has been fully integrated into the HealthSathi project for semantic caching, user context retrieval, and medical knowledge management.
+ChromaDB has been fully integrated into the HealthSaathi project for semantic caching, user context retrieval, and medical knowledge management.
 
 ---
 
@@ -260,7 +260,7 @@ Normalize: "सर्दी" (Nepali) → "common cold" (English)
 ### Check Cache Growth
 ```python
 import os
-os.chdir('/home/prashant/Coding/Projects/HealthSathi/backend')
+os.chdir('/home/prashant/Coding/Projects/HealthSaathi/backend')
 from triage.chromadb import ChromaDBManager
 stats = ChromaDBManager.get_stats()
 print(stats)
@@ -321,7 +321,7 @@ print(stats)
 
 **ChromaDB Docs**: https://docs.trychroma.com/
 **Django REST Framework**: https://www.django-rest-framework.org/
-**Project Location**: `/home/prashant/Coding/Projects/HealthSathi/backend/`
+**Project Location**: `/home/prashant/Coding/Projects/HealthSaathi/backend/`
 
 ---
 

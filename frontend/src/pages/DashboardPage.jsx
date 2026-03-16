@@ -347,7 +347,7 @@ export default function DashboardPage() {
               </div>
               <p className="text-white text-xs md:text-sm leading-relaxed font-medium">{tip.tip}</p>
               <div className="mt-4 flex items-center gap-2">
-                <span className="text-white/60 text-xs">Powered by HealthSathi AI</span>
+                <span className="text-white/60 text-xs">Powered by HealthSaathi AI</span>
               </div>
             </div>
           </div>

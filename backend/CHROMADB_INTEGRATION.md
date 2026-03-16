@@ -1,7 +1,7 @@
 # ChromaDB Integration Guide
 
 ## Overview
-ChromaDB has been successfully integrated into the HealthSathi backend for **semantic caching**, **user context retrieval (RAG)**, and **medical knowledge management**.
+ChromaDB has been successfully integrated into the HealthSaathi backend for **semantic caching**, **user context retrieval (RAG)**, and **medical knowledge management**.
 
 ## Architecture
 
@@ -124,7 +124,7 @@ class TriageView(APIView):
 ### Database Path
 ChromaDB stores persistent data at:
 ```
-/home/prashant/Coding/Projects/HealthSathi/chromadb_data/
+/home/prashant/Coding/Projects/HealthSaathi/chromadb_data/
 ```
 
 Directory structure:
@@ -314,7 +314,7 @@ class HistoryEntry:
 ## Support & Documentation
 
 - **ChromaDB Official**: https://docs.trychroma.com/
-- **Project Repo**: HealthSathi Backend
+- **Project Repo**: HealthSaathi Backend
 - **Issues**: Check `chromadb.py` for error logs
 
 ---

@@ -2,7 +2,7 @@
 
 ## ✅ Integration Complete
 
-ChromaDB has been successfully integrated into the HealthSathi backend. The system now includes semantic caching, user context retrieval (RAG), and medical knowledge management.
+ChromaDB has been successfully integrated into the HealthSaathi backend. The system now includes semantic caching, user context retrieval (RAG), and medical knowledge management.
 
 ## What Was Implemented
 
@@ -43,7 +43,7 @@ ChromaDB has been successfully integrated into the HealthSathi backend. The syst
 ## Directory Structure
 
 ```
-/home/prashant/Coding/Projects/HealthSathi/backend/
+/home/prashant/Coding/Projects/HealthSaathi/backend/
 ├── triage/
 │   ├── chromadb.py              ← New ChromaDB manager
 │   ├── ai_client.py             ← Updated with cache check
@@ -65,7 +65,7 @@ ChromaDB has been successfully integrated into the HealthSathi backend. The syst
 ### Installation
 ```bash
 # Already done! But if needed:
-cd /home/prashant/Coding/Projects/HealthSathi/backend
+cd /home/prashant/Coding/Projects/HealthSaathi/backend
 pip install --break-system-packages chromadb>=1.4.0
 ```
 

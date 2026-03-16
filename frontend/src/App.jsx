@@ -184,7 +184,7 @@ function TopBar({ mobileMenuOpen, onMobileMenuToggle }) {
   };
 
   const path = window.location.pathname;
-  const page = pageTitles[path] || { title: 'HealthSathi', sub: '' };
+  const page = pageTitles[path] || { title: 'HealthSaathi', sub: '' };
 
   return (
     <header className="h-16 bg-white border-b border-teal-200 flex items-center justify-between px-4 md:px-6 flex-shrink-0 shadow-sm">

@@ -56,7 +56,7 @@ export default function GuidePage() {
       <div className="w-full max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.guide?.title || 'How HealthSathi Works'}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.guide?.title || 'How HealthSaathi Works'}</h1>
           <p className="text-gray-600">{t.guide?.subtitle || 'Follow these simple steps to get personalized health guidance'}</p>
         </div>
 

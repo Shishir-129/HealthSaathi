@@ -1,0 +1,590 @@
+================================================================================
+                          HEALTHSAATHI PROJECT DOCUMENTATION
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+
+HealthSaathi is an AI-powered health companion platform designed to provide 
+instant medical triage, nearby health facility discovery, and personalized 
+medical guidance. The system is built with a multilingual interface (Nepali 
+and English) and serves users across 77 districts in Nepal.
+
+Core Features:
+  • AI-powered symptom triage and risk assessment
+  • Facility location discovery using GPS mapping
+  • Multilingual support (Nepali and English)
+  • Conversation history management
+  • Text-to-Speech health guidance
+  • User authentication and profile management
+  • Real-time medical consultation support
+
+
+TECHNOLOGY STACK
+================================================================================
+
+BACKEND:
+  • Framework: Django 4.2.29 (Python web framework)
+  • REST API: Django REST Framework 3.16.1
+  • Database: PostgreSQL (via psycopg2-binary)
+  • Vector Database: ChromaDB 1.5.5 (for AI embeddings and similarity search)
+  • Mapping API: Baato 1.0.1 (location and facility mapping)
+  • Server: Gunicorn 20.1.0 (production WSGI server)
+  • CORS: django-cors-headers 4.9.0 (cross-origin requests)
+  • Environment: python-dotenv 1.2.2 (environment configuration)
+  • HTTP Client: requests 2.32.5 (external API calls)
+
+FRONTEND:
+  • UI Framework: React 18.2.0 (modern component-based UI)
+  • Build Tool: Vite 7.3.1 (fast module bundler)
+  • Styling: Tailwind CSS 3.3.5 (utility-first CSS framework)
+  • Routing: React Router DOM 6.20.0 (client-side navigation)
+  • HTTP Client: Axios 1.6.0 (API communication)
+  • Mapping: Leaflet 1.9.4 + React Leaflet 4.2.1 (interactive maps)
+  • CSS Processing: PostCSS 8.4.31 + Autoprefixer 10.4.16
+
+INFRASTRUCTURE:
+  • Version Control: Git
+  • Development: Node.js ecosystem for frontend
+
+
+PROJECT STRUCTURE
+================================================================================
+
+HealthSaathi/
+├── backend/                           # Django REST API server
+│   ├── manage.py                      # Django management script
+│   ├── requirements.txt               # Python dependencies
+│   ├── db.sqlite3                     # SQLite database (development)
+│   ├── nepalcare/                     # Main Django project settings
+│   │   ├── settings.py                # Configuration and app settings
+│   │   ├── urls.py                    # Main URL routing
+│   │   └── wsgi.py                    # WSGI application entry point
+│   └── triage/                        # Core triage application
+│       ├── models.py                  # Database models
+│       ├── views.py                   # API views and endpoints
+│       ├── serializers.py             # Data serialization
+│       ├── urls.py                    # App-level URL routing
+│       ├── ai_client.py               # AI service integration
+│       ├── chromadb.py                # Vector DB operations
+│       ├── database_client.py         # Database utilities
+│       ├── supabase_client.py         # External database integration
+│       ├── baato.py                   # Mapping API integration
+│       └── migrations/                # Database migration files
+│
+└── frontend/                          # React Vite application
+    ├── package.json                   # Node dependencies and scripts
+    ├── vite.config.js                 # Vite bundler configuration
+    ├── tailwind.config.js             # Tailwind CSS configuration
+    ├── postcss.config.js              # PostCSS processing config
+    ├── index.html                     # HTML entry point
+    └── src/
+        ├── main.jsx                   # React app entry point
+        ├── App.jsx                    # Root React component
+        ├── index.css                  # Global styles
+        ├── pages/                     # Page-level components
+        │   ├── LoginPage.jsx          # User authentication
+        │   ├── RegisterPage.jsx       # Account creation
+        │   ├── ChatPage.jsx           # Main triage chat interface
+        │   ├── DashboardPage.jsx      # Analytics dashboard
+        │   ├── MapPage.jsx            # Facility location map
+        │   └── ProfilePage.jsx        # User profile management
+        ├── components/                # Reusable UI components
+        │   ├── ChatWindow.jsx         # Chat message display and input
+        │   ├── MessageBubble.jsx      # Individual message styling
+        │   ├── RiskCard.jsx           # Triage result display
+        │   ├── HealthMap.jsx          # Facility map component
+        │   ├── VoiceButton.jsx        # Voice input control
+        │   ├── VoiceSettings.jsx      # Text-to-speech settings
+        │   └── LanguageToggle.jsx     # Language selector
+        ├── services/                  # API and utility services
+        │   ├── api.js                 # Axios instance and API base
+        │   ├── triageService.js       # Triage API calls
+        │   ├── locationService.js     # GPS and mapping services
+        │   └── textToSpeechService.js # TTS implementation
+        ├── context/                   # Global state management
+        │   └── AppContext.jsx         # Central application state
+        ├── i18n/                      # Internationalization
+        │   └── translations.js        # Language strings (Nepali/English)
+        └── data/                      # Static data
+            └── healthPosts.js         # Health education content
+
+
+KEY FILES AND FOLDERS (DETAILED)
+================================================================================
+
+BACKEND KEY FILES:
+
+1. backend/triage/models.py
+   - Conversation Model: Manages conversation threads for users
+   - TriageSession Model: Stores triage results, symptoms, and medical advice
+   - Database schema for user consultations and health records
+
+2. backend/triage/views.py
+   - RegisterView: User account creation endpoint
+   - LoginView: User authentication and token generation
+   - TriageView: Main endpoint for AI symptom analysis
+   - HistoryView: Retrieves user consultation history
+   - GetUpdateProfileView: User profile management
+   - StatsView: Application statistics
+
+3. backend/triage/ai_client.py
+   - Integration with AI models for symptom analysis
+   - Natural language processing for medical advice generation
+
+4. backend/triage/chromadb.py
+   - ChromaDB vector database operations
+   - Embedding storage and similarity search for medical data
+
+5. backend/triage/baato.py
+   - Baato mapping API integration
+   - Nearby health facility discovery based on coordinates
+
+6. backend/nepalcare/settings.py
+   - Django configuration and app settings
+   - Database credentials and environment variables
+   - CORS configuration for frontend requests
+   - Installed apps and middleware setup
+
+
+FRONTEND KEY FILES:
+
+1. src/pages/ChatPage.jsx
+   - Main triage interface where users describe symptoms
+   - Chat history display and management
+   - Mobile responsive floating action buttons
+   - Location-based consultation tracking
+
+2. src/components/ChatWindow.jsx
+   - Real-time message display and input
+   - Voice input integration
+   - Quick symptom suggestions
+   - Message history scrolling
+
+3. src/components/RiskCard.jsx
+   - Displays triage results from AI analysis
+   - Risk level indicators (HIGH, MEDIUM, LOW)
+   - Detailed medical advice and recommendations
+   - Food suggestions and lifestyle guidance
+
+4. src/pages/MapPage.jsx
+   - Dedicated map view for nearest health facilities
+   - Interactive map display using Leaflet and Baato API
+   - Shows hospitals, clinics, and health centers in proximity
+   - Facilities filtered by:
+     * Type (hospital, clinic, pharmacy)
+     * Distance from user's current location
+     * District/region availability
+   - User can:
+     * View facility details (name, address, phone, hours)
+     * Calculate distance to facility
+     * Plan route navigation
+     * Filter facilities by type or distance range
+   - Real-time location updates as user moves
+   - Critical for users to find emergency medical services
+
+5. src/pages/DashboardPage.jsx
+   - Analytics dashboard for tracking health records
+   - Displays health statistics and consultation patterns:
+     * Total consultations performed
+     * consultation frequency trends
+     * Most common symptoms/conditions
+     * Risk level distribution (high/medium/low)
+   - Health metrics visualization:
+     * Charts showing consultation history over time
+     * Risk patterns and seasonal trends
+     * Facility visit recommendations
+   - Quick statistics cards showing:
+     * Recent consultations count
+     * Average risk level
+     * Most visited health facilities
+     * Geographic consultation distribution
+   - Users can track health patterns for preventive care
+
+6. src/pages/ProfilePage.jsx
+   - Comprehensive user profile management interface
+   - User Information Tab:
+     * Edit personal details (name, age, gender)
+     * Contact information management
+     * Emergency contact settings
+   - Health Tab:
+     * Medical history summary
+     * Chronic conditions tracking
+     * Medications and allergies
+     * Previous diagnoses
+   - Account Tab:
+     * Email settings and verification
+     * Password change functionality
+     * Privacy and security settings
+     * Two-factor authentication options
+   - Settings Tab:
+     * Language preference (Nepali/English)
+     * Notification preferences
+     * Voice/TTS settings
+     * Data retention policies
+   - Health records can be exported for medical visits
+
+7. src/components/HealthMap.jsx
+   - Reusable interactive map component
+   - Uses Leaflet and React Leaflet for map rendering
+   - Features:
+     * User location marker (blue dot)
+     * Facility markers color-coded by type
+       - Hospital: Red marker
+       - Clinic: Orange marker
+       - Pharmacy: Green marker
+     * Distance circle around user showing facility range
+     * Zoom and pan controls for navigation
+   - Interactive popups showing facility details
+   - Integrates with Baato API for facility data
+   - Responsive design works on mobile and desktop
+   - Can be embedded in ChatPage or viewed full-screen on MapPage
+
+8. src/services/api.js
+   - Centralized API client using Axios
+   - Base URL configuration
+   - Authentication token handling
+   - Request/response interceptors
+
+5. src/services/triageService.js
+   - API calls for triage operations
+   - User authentication functions
+   - Consultation history fetching
+   - Session management
+
+6. src/context/AppContext.jsx
+   - Global state management (Redux-like pattern)
+   - User authentication state
+   - Chat messages and conversation data
+   - Language preference (Nepali/English)
+   - Location tracking
+
+7. src/i18n/translations.js
+   - All UI text strings in Nepali and English
+   - Centralized multilingual support
+   - Easy localization maintenance
+
+
+CODE FLOW AND ARCHITECTURE
+================================================================================
+
+USER AUTHENTICATION FLOW:
+1. User accesses LoginPage.jsx
+2. Enters email and password credentials
+3. Frontend calls triageService.login() → api.post('/login/')
+4. Backend LoginView validates credentials against User model
+5. Django generates authentication token
+6. Frontend stores token in localStorage
+7. User redirected to ChatPage.jsx
+8. AppContext maintains authenticated user state globally
+
+SYMPTOM TRIAGE FLOW:
+1. User enters symptoms in ChatPage.jsx
+2. Frontend calls triageService.sendTriage(symptoms, location)
+3. API request sent to backend TriageView with:
+   - User symptoms (text)
+   - User location (latitude, longitude)
+   - User context from profile
+4. Backend TriageView processes:
+   - Validates user authentication
+   - Creates TriageSession record in database
+   - Sends symptoms to AI model (ai_client.py)
+   - AI analyzes and generates:
+     * Risk level (HIGH/MEDIUM/LOW)
+     * Brief medical advice
+     * Detailed health guidance
+     * Dietary recommendations (food_eat, food_avoid)
+     * Dos and Don'ts
+   - Uses ChromaDB for semantic search of similar symptoms
+   - Returns structured JSON response
+5. Frontend receives response and displays RiskCard
+6. User sees:
+   - Risk assessment with color coding
+   - Medical advice in current language
+   - Facility recommendations
+   - Text-to-speech playback option
+
+LOCATION-BASED FACILITY DISCOVERY:
+1. ChatPage requests user location via locationService.getCurrentLocation()
+2. Browser Geolocation API returns latitude/longitude
+3. locationService.getPlaceAndCity() calls backend location endpoint
+4. Backend uses Baato API to:
+   - Reverse geocode coordinates → place name and district
+   - Fetch nearby health facilities (hospitals, clinics)
+5. Frontend displays:
+   - Current location with district name
+   - Interactive map with facility markers
+   - Facility details (name, distance, type)
+6. Facilities specific to user's district shown in triage advice
+
+
+WORKING FLOW (USER PERSPECTIVE)
+================================================================================
+
+STEP 1: REGISTRATION
+  • User opens HealthSaathi web application
+  • Clicks "Create account" on LoginPage
+  • Enters email, password, name, age, gender
+  • Frontend sends to RegisterView endpoint
+  • Backend validates and creates User record with UserProfile
+  • User redirected to login
+
+STEP 2: LOGIN
+  • User enters email and password
+  • Credentials validated by Django authentication
+  • Token generated and sent to frontend
+  • Token stored in browser localStorage
+  • User taken to DashboardPage
+
+STEP 3: LOCATION SETUP
+  • Frontend requests browser location permission
+  • GPS coordinates obtained via Geolocation API
+  • Location reverse-geocoded to district and place
+  • Displayed in location bar with refresh option
+
+STEP 4: SYMPTOM INPUT
+  • User navigates to ChatPage
+  • Describes symptoms in chat input box
+  • Can use voice input (VoiceButton) for hands-free entry
+  • Can select from quick symptom suggestions
+  • Sends message to AI triage system
+
+STEP 5: AI ANALYSIS
+  • Symptoms analyzed by AI model
+  • ChromaDB searches for similar symptom patterns
+  • System generates personalized health assessment
+  • Risk level determined (HIGH/MEDIUM/LOW)
+  • Medical advice prepared in user's language
+
+STEP 6: RESULT DISPLAY
+  • RiskCard shows:
+    - Risk indicator with color and risk level
+    - Primary medical advice
+    - Detailed guidance
+    - Food recommendations
+    - Dos and Don'ts
+    - Recommended local facilities
+  • User can:
+    - Listen to advice via text-to-speech
+    - Adjust TTS settings (speed, language)
+    - View on interactive map
+
+STEP 7: CONSULTATION HISTORY
+  • Conversations saved to database automatically
+  • User can view previous consultations
+  • History filterable by date and risk level
+  • Can delete old consultations
+  • Useful for tracking health patterns
+
+STEP 8: FACILITY DISCOVERY AND MAPPING
+  • User can navigate to MapPage for nearest hospitals/clinics
+  • Map displays user's current location (blue marker)
+  • Color-coded facility markers:
+    - Red: Hospitals/Health Clinics
+    - Blue: User
+  • User can:
+    - Tap facility marker for details
+    - View facility address and contact info
+    - Calculate distance to facility
+    - Plan route to facility
+  - Facilities sourced in real-time via Baato API
+  - Filter facilities by type and distance
+
+STEP 9: HEALTH RECORD TRACKING (DASHBOARD)
+  • User navigates to DashboardPage for health analytics
+  • Sees statistics about consultations:
+    - Total consultations (count)
+    - Consultation frequency (weekly, monthly)
+    - Most common symptoms
+    - Risk level distribution (how many high/medium/low)
+  • Visualized through charts and statistics cards:
+    - Trend graphs showing health patterns over time
+    - Seasonal patterns in symptoms
+    - Most-visited health facilities
+  • Useful for:
+    - Identifying chronic health patterns
+    - Planning preventive healthcare
+    - Tracking health improvements
+    - Sharing data with doctors
+
+STEP 10: PROFILE MANAGEMENT
+  • User accesses ProfilePage for account management
+  • Multiple tabs for different settings:
+    * Personal Info: Update name, age, gender, contact details
+    * Health Tab: Medical history, chronic conditions, medications, allergies
+    * Account Tab: Email, password, security settings
+    * Settings Tab: Language, notifications, voice preferences
+  • Users can:
+    - Update emergency contact information
+    - Track medical history and chronic conditions
+    - Export health records for doctor visits
+    - Change language preference (affects translations globally)
+    - Configure text-to-speech settings
+    - Manage notification preferences
+  • Profile data stored securely in PostgreSQL
+  • Changes synced across all devices
+
+
+DATA FLOW IN APPLICATION
+================================================================================
+
+REQUEST-RESPONSE CYCLE:
+
+Frontend → Backend:
+  /api/triage/
+    Input: { symptoms, location, user_id, language }
+    ↓
+Backend Processing:
+  1. Authenticate user via token
+  2. Store TriageSession record
+  3. Parse symptoms with NLP
+  4. Query ChromaDB for embeddings
+  5. Call AI model for analysis
+  6. Query Baato API for facilities
+  7. Compile response
+    ↓
+Backend → Frontend:
+  Output: {
+    risk_level, brief_advice, detailed_advice,
+    food_eat, food_avoid, dos, donts,
+    recommended_facilities, conversation_id
+  }
+    ↓
+Frontend Display:
+  1. Parse response
+  2. Render RiskCard component
+  3. Update chat history
+  4. Display on map
+  5. Enable text-to-speech
+
+
+API ENDPOINTS SUMMARY
+================================================================================
+
+AUTHENTICATION:
+  POST /api/register/       - Create new user account
+  POST /api/login/          - User login and token generation
+  POST /api/logout/         - Logout and session cleanup
+  GET  /api/profile/        - Fetch user profile
+  PUT  /api/profile/        - Update user profile
+
+TRIAGE & CHAT:
+  POST /api/triage/         - Submit symptoms for analysis
+  GET  /api/history/        - Get user's consultation history
+  DELETE /api/history/{id}/ - Delete specific consultation
+
+UTILITIES:
+  GET  /api/places/         - Get place name from coordinates
+  GET  /api/facilities/     - Get nearby health facilities
+  GET  /api/stats/          - Application statistics
+
+SETTINGS:
+  GET  /api/translations/   - Multilingual text strings
+  POST /api/voice-logs/     - Save text-to-speech logs
+
+
+RESPONSIVE DESIGN APPROACH
+================================================================================
+
+Mobile Optimization:
+  • Tailwind CSS breakpoints for responsive layout
+  • sm: (640px) - Large phones
+  • md: (768px) - Tablets
+  • lg: (1024px) - Desktop
+  • xl: (1280px) - Large desktop
+
+Mobile Features:
+  • Hamburger menu navigation on small screens
+  • Floating action buttons repositioned for mobile
+  • Touch-friendly button sizes (min 40px×40px)
+  • Stacked layouts on phones, side-by-side on desktop
+  • Bottom-sheet modals for history on mobile
+  • Voice input optimized for mobile devices
+
+Accessibility:
+  • Semantic HTML structure
+  • ARIA labels for screen readers
+  • Keyboard navigation support
+  • Text-to-speech for health guidance
+  • High contrast color scheme
+
+
+INSTALLATION AND DEPLOYMENT
+================================================================================
+
+BACKEND SETUP:
+  1. Navigate to backend directory
+  2. Create virtual environment: python -m venv venv
+  3. Activate: source venv/bin/activate (Unix) or venv\Scripts\activate (Windows)
+  4. Install dependencies: pip install -r requirements.txt
+  5. Configure environment variables in .env file
+  6. Run migrations: python manage.py migrate
+  7. Start server: python manage.py runserver
+  8. Production: gunicorn nepalcare.wsgi
+
+FRONTEND SETUP:
+  1. Navigate to frontend directory
+  2. Install dependencies: npm install
+  3. Configure API base URL in src/services/api.js
+  4. Development: npm run dev
+  5. Build: npm run build
+  6. Production: Deploy build/ folder to static hosting
+
+
+SECURITY CONSIDERATIONS
+================================================================================
+
+  • Token-based authentication (Bearer tokens)
+  • Password hashing with Django's build-in authentication
+  • CORS header validation for cross-origin requests
+  • Environment variables for sensitive credentials
+  • Input validation on both frontend and backend
+  • SQL injection prevention via ORM (Django models)
+  • HTTPS recommended for production deployment
+  • User data encryption in transit and at rest
+
+
+MAINTENANCE AND MONITORING
+================================================================================
+
+Key Areas to Monitor:
+  • AI model accuracy and response quality
+  • ChromaDB embedding relevance
+  • API response times and latency
+  • User authentication success rates
+  • Database query performance
+  • Geographic service reliability (GPS, Baato API)
+  • Text-to-speech service availability
+
+Regular Tasks:
+  • Database backups and optimization
+  • AI model retraining with new medical data
+  • ChromaDB index updates
+  • Security patches for dependencies
+  • User feedback collection and analysis
+  • Performance profiling and optimization
+
+
+CONCLUSION
+================================================================================
+
+HealthSaathi is a comprehensive healthcare AI platform that combines:
+  • Advanced AI for medical triage
+  • Geographic intelligence for facility location
+  • Multilingual support for accessibility
+  • Modern web technologies for scalability
+  • Mobile-first responsive design
+  • Secure user authentication
+
+The architecture separates concerns between frontend (user interface) and 
+backend (business logic), allowing independent development and scaling. The 
+system leverages ChromaDB for semantic search, Baato for location services, 
+and AI models for intelligent medical analysis.
+
+The platform is designed to serve healthcare seekers across Nepal, providing 
+instant, personalized medical guidance and facility recommendations in their 
+preferred language.
+
+================================================================================
+End of Documentation
+================================================================================

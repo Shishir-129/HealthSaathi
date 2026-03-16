@@ -1,6 +1,6 @@
 # ✅ ChromaDB Integration - COMPLETE
 
-## Project: HealthSathi Backend
+## Project: HealthSaathi Backend
 
 ### Integration Status: **COMPLETE & TESTED**
 
@@ -258,7 +258,7 @@ context = ChromaDBManager.get_user_context(user_id, query)
 
 ## 🎉 Result
 
-**ChromaDB is now fully integrated into the HealthSathi backend!**
+**ChromaDB is now fully integrated into the HealthSaathi backend!**
 
 The system automatically:
 1. **Checks cache** before calling expensive LLM APIs

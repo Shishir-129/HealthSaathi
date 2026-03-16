@@ -7,7 +7,7 @@
  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝
 ```
 
-# HealthSathi 🏥 - Your AI Health Companion for Rural Nepal
+# HealthSaathi 🏥 - Your AI Health Companion for Rural Nepal
 
 <div align="center">
 
@@ -44,7 +44,7 @@ In remote areas of Nepal, people often don't know how serious their symptoms are
 
 ## ✨ Solution
 
-**HealthSathi** is an AI-powered medical triage web application that provides **instant symptom assessment** in **both Nepali and English**. Users describe their symptoms to our AI, receive a risk level (HIGH/MEDIUM/LOW), and get directions to the nearest health facility.
+**HealthSaathi** is an AI-powered medical triage web application that provides **instant symptom assessment** in **both Nepali and English**. Users describe their symptoms to our AI, receive a risk level (HIGH/MEDIUM/LOW), and get directions to the nearest health facility.
 
 **Key Benefits:**
 - ⚡ **Instant Access** — AI-powered triage 24/7 in 30 seconds
@@ -133,8 +133,8 @@ Before you begin, ensure you have:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/prashant7738/HealthSathi.git
-   cd healthsathi/backend
+   git clone https://github.com/prashant7738/HealthSaathi.git
+   cd healthsaathi/backend
    ```
 
 2. **Create virtual environment**
@@ -199,7 +199,7 @@ Before you begin, ensure you have:
 
 ### 🎉 You're Ready!
 
-Visit `http://localhost:5173` in your browser to use HealthSathi!
+Visit `http://localhost:5173` in your browser to use HealthSaathi!
 
 ---
 
@@ -213,7 +213,7 @@ Visit `http://localhost:5173` in your browser to use HealthSathi!
 | `GROQ_API_KEY` | `gsk_...` | Groq API key for LLaMA AI |
 | `GEMINI_API_KEY` | `AIzaSy...` | Google Gemini API key (fallback) |
 | `BAATO_API_KEY` | `ba_...` | Baato Maps API key |
-| `DB_NAME` | `healthsathi` | PostgreSQL database name |
+| `DB_NAME` | `healthsaathi` | PostgreSQL database name |
 | `DB_USER` | `postgres` | PostgreSQL username |
 | `DB_PASSWORD` | `password123` | PostgreSQL password |
 | `DB_HOST` | `localhost` | PostgreSQL host |
@@ -227,7 +227,7 @@ Visit `http://localhost:5173` in your browser to use HealthSathi!
 | Variable | Example | Description |
 |----------|---------|-------------|
 | `VITE_API_URL` | `http://localhost:8000/api` | Backend API base URL |
-| `VITE_APP_NAME` | `HealthSathi` | Application name |
+| `VITE_APP_NAME` | `HealthSaathi` | Application name |
 
 ---
 
@@ -259,7 +259,7 @@ Visit `http://localhost:5173` in your browser to use HealthSathi!
 ## 📁 Project Structure
 
 ```
-HealthSathi/
+HealthSaathi/
 │
 ├── backend/                          # Django REST API
 │   ├── nepalcare/                    # Main Django project
@@ -372,7 +372,7 @@ HealthSathi/
 
 | Role | Name | GitHub |
 |------|------|--------|
-| **Full Stack** | Team Paila | [GitHub](https://github.com/prashant7738/HealthSathi) |
+| **Full Stack** | Team Paila | [GitHub](https://github.com/prashant7738/HealthSaathi) |
 
 ---
 

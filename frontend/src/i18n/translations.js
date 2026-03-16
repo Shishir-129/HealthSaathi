@@ -105,7 +105,7 @@ const translations = {
       notProvided: 'Not provided',
     },
     guide: {
-      title: 'How HealthSathi Works',
+      title: 'How HealthSaathi Works',
       subtitle: 'Follow these simple steps to get personalized health guidance',
       step1Title: 'Describe Your Symptoms',
       step1Desc: 'Type or speak your symptoms naturally',
@@ -272,7 +272,7 @@ const translations = {
       notProvided: 'प्रदान गरिएको छैन',
     },
     guide: {
-      title: 'HealthSathi कसरी काम गर्छ',
+      title: 'HealthSaathi कसरी काम गर्छ',
       subtitle: 'व्यक्तिगतकृत स्वास्थ्य मार्गदर्शन पाउन यी सरल चरणहरू पालना गर्नुहोस्',
       step1Title: 'आपको लक्षणहरू वर्णन गर्नुहोस्',
       step1Desc: 'आपको लक्षणहरू प्राकृतिकरूपमा टाइप गर्नुहोस् वा बोल्नुहोस्',
