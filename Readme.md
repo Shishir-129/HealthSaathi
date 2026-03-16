@@ -23,7 +23,6 @@
 **Built for the AI Hackathon 2026** 🚀  
 *March 15-16 @ Embark College Pulchowk | The Startup Network*
 
-[🌐 Live Demo](#) • [📚 Documentation](#) • [🤝 Contributing](#contributing) • [📄 License](#license)
 
 </div>
 
