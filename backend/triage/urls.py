@@ -8,7 +8,12 @@ from .views import (
     GetUpdateProfileView,
     HistoryView,
     ChromaDBStatsView,
-    UserContextView
+    UserContextView,
+    ImageGenerationView,
+    VisionAnalysisView,
+    PDFProcessingView,
+    ImageProcessingLogsView,
+    RateLimitStatusView,
 )
 from .baato import BaatoView
 
@@ -23,4 +28,10 @@ urlpatterns = [
     path('history/', HistoryView.as_view(), name='history'),
     path('chromadb/stats/', ChromaDBStatsView.as_view(), name='chromadb_stats'),
     path('chromadb/context/', UserContextView.as_view(), name='user_context'),
+    # Image Generation & Vision endpoints
+    path('image/generate/', ImageGenerationView.as_view(), name='image_generate'),
+    path('image/analyze/', VisionAnalysisView.as_view(), name='vision_analysis'),
+    path('image/pdf/', PDFProcessingView.as_view(), name='pdf_processing'),
+    path('image/logs/', ImageProcessingLogsView.as_view(), name='image_logs'),
+    path('image/rate-limit/', RateLimitStatusView.as_view(), name='rate_limit_status'),
 ]

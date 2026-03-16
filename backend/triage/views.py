@@ -1,4 +1,6 @@
 import math
+import os
+import tempfile
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -17,6 +19,13 @@ from .serializers import (
 from .ai_client import analyze_symptoms
 from .database_client import save_triage_session, get_real_stats
 from .chromadb import ChromaDBManager
+from .image_client import (
+    generate_image,
+    analyze_image,
+    extract_images_from_pdf,
+    get_processing_logs,
+    check_rate_limit_status,
+)
 
 
 def _get_authenticated_user(request):
@@ -430,3 +439,203 @@ class UserContextView(APIView):
             return Response({
                 "error": f"Failed to retrieve context: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================== IMAGE GENERATION & VISION ====================
+
+class ImageGenerationView(APIView):
+    """Generate images from text prompts using Azure OpenAI GPT-image-1.5"""
+    
+    def post(self, request):
+        """
+        Generate image from prompt.
+        
+        Expected payload:
+        {
+            "prompt": "A doctor examining a patient",
+            "size": "1024x1024",  // optional, default: 1024x1024
+            "quality": "standard", // optional, default: standard
+            "n": 1                 // optional, number of images
+        }
+        """
+        try:
+            prompt = request.data.get("prompt", "").strip()
+            if not prompt:
+                return Response(
+                    {"error": "prompt is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            size = request.data.get("size", "1024x1024")
+            quality = request.data.get("quality", "standard")
+            n = int(request.data.get("n", 1))
+            
+            # Validate size
+            valid_sizes = ["1024x1024", "1024x1792", "1792x1024"]
+            if size not in valid_sizes:
+                return Response(
+                    {"error": f"Invalid size. Must be one of: {valid_sizes}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate quality
+            valid_quality = ["standard", "hd"]
+            if quality not in valid_quality:
+                return Response(
+                    {"error": f"Invalid quality. Must be one of: {valid_quality}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            result = generate_image(prompt=prompt, size=size, quality=quality, n=n)
+            
+            if "error" in result:
+                return Response(
+                    result,
+                    status=status.HTTP_429_TOO_MANY_REQUESTS if "Rate limit" in result["error"] else status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response(result, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"Image generation failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class VisionAnalysisView(APIView):
+    """Analyze images using Azure OpenAI vision capabilities"""
+    
+    def post(self, request):
+        """
+        Analyze an image.
+        
+        Expected payload:
+        {
+            "image_source": "data:image/jpeg;base64,...",  // base64 or URL
+            "question": "What is in this image?"
+        }
+        """
+        try:
+            image_source = request.data.get("image_source", "").strip()
+            question = request.data.get("question", "").strip()
+            
+            if not image_source:
+                return Response(
+                    {"error": "image_source is required (base64 or URL)"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if not question:
+                return Response(
+                    {"error": "question is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            result = analyze_image(image_source=image_source, question=question)
+            
+            if "error" in result:
+                return Response(
+                    result,
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            return Response(result, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"Vision analysis failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class PDFProcessingView(APIView):
+    """Extract and process images from PDF files"""
+    
+    def post(self, request):
+        """
+        Process a PDF file.
+        
+        Expected payload:
+        {
+            "pdf_path": "/path/to/file.pdf"
+        }
+        """
+        temp_pdf_path = None
+        try:
+            uploaded_file = request.FILES.get("file")
+            pdf_path = request.data.get("pdf_path", "").strip()
+
+            if uploaded_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                    for chunk in uploaded_file.chunks():
+                        temp_file.write(chunk)
+                    temp_pdf_path = temp_file.name
+                pdf_path = temp_pdf_path
+
+            if not pdf_path:
+                return Response(
+                    {"error": "Provide either 'file' upload or 'pdf_path'"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            result = extract_images_from_pdf(pdf_path=pdf_path)
+            
+            if "error" in result:
+                status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+                if "requires" in result["error"] or "install_command" in result:
+                    status_code = status.HTTP_400_BAD_REQUEST
+                return Response(result, status=status_code)
+            
+            return Response(result, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"PDF processing failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        finally:
+            if temp_pdf_path and os.path.exists(temp_pdf_path):
+                try:
+                    os.remove(temp_pdf_path)
+                except OSError:
+                    pass
+
+
+class ImageProcessingLogsView(APIView):
+    """Get all image processing logs and metadata"""
+    
+    def get(self, request):
+        """
+        Retrieve all image generation, vision analysis, and PDF processing logs.
+        Useful for final presentation and auditing.
+        """
+        try:
+            logs = get_processing_logs()
+            return Response({
+                "logs": logs,
+                "total_entries": logs.get("total_entries", 0),
+                "message": "Image processing logs retrieved successfully"
+            }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to retrieve logs: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class RateLimitStatusView(APIView):
+    """Check current image request rate limit status"""
+    
+    def get(self, request):
+        """Get rate limit information and current status"""
+        try:
+            status_info = check_rate_limit_status()
+            return Response(status_info, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response(
+                {"error": f"Failed to check rate limit: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
