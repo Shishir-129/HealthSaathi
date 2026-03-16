@@ -12,6 +12,9 @@ and English) and serves users across 77 districts in Nepal.
 
 Core Features:
   • AI-powered symptom triage and risk assessment
+  • Medical image generation from text prompts using DALL-E
+  • Vision-based image analysis for medical report interpretation
+  • PDF extraction and medical document analysis
   • Facility location discovery using GPS mapping
   • Multilingual support (Nepali and English)
   • Conversation history management
@@ -29,6 +32,10 @@ BACKEND:
   • Database: PostgreSQL (via psycopg2-binary)
   • Vector Database: ChromaDB 1.5.5 (for AI embeddings and similarity search)
   • Mapping API: Baato 1.0.1 (location and facility mapping)
+  • Image Processing: Pillow 10.4.0 (image manipulation), pdf2image (PDF extraction)
+  • Document Processing: PyPDF2 3.0.1 (PDF text extraction)
+  • Vision API: Azure OpenAI Vision for image analysis
+  • Image Generation: Azure OpenAI DALL-E for medical image generation
   • Server: Gunicorn 20.1.0 (production WSGI server)
   • CORS: django-cors-headers 4.9.0 (cross-origin requests)
   • Environment: python-dotenv 1.2.2 (environment configuration)
@@ -66,10 +73,12 @@ HealthSaathi/
 │       ├── serializers.py             # Data serialization
 │       ├── urls.py                    # App-level URL routing
 │       ├── ai_client.py               # AI service integration
-│       ├── chromadb.py                # Vector DB operations
-│       ├── database_client.py         # Database utilities
-│       ├── supabase_client.py         # External database integration
-│       ├── baato.py                   # Mapping API integration
+       ├── image_client.py            # Image generation and vision analysis
+       ├── chromadb.py                # Vector DB operations
+       ├── database_client.py         # Database utilities
+       ├── supabase_client.py         # External database integration
+       ├── baato.py                   # Mapping API integration
+       ├── image_storage/             # Generated images and extracted PDFs
 │       └── migrations/                # Database migration files
 │
 └── frontend/                          # React Vite application
@@ -101,6 +110,7 @@ HealthSaathi/
         │   ├── api.js                 # Axios instance and API base
         │   ├── triageService.js       # Triage API calls
         │   ├── locationService.js     # GPS and mapping services
+        │   ├── imageService.js        # Image generation and analysis
         │   └── textToSpeechService.js # TTS implementation
         ├── context/                   # Global state management
         │   └── AppContext.jsx         # Central application state
@@ -139,7 +149,13 @@ BACKEND KEY FILES:
 5. backend/triage/baato.py
    - Baato mapping API integration
    - Nearby health facility discovery based on coordinates
-
+5. backend/triage/image_client.py
+   - Medical image generation using Azure OpenAI DALL-E
+   - Vision analysis using Azure OpenAI Vision API
+   - PDF extraction and text/image content processing
+   - Rate limiting for image requests (3 per minute)
+   - Support for multiple image generation fallbacks (Hugging Face, Pollinations)
+   - Image storage in local ./image_storage directory
 6. backend/nepalcare/settings.py
    - Django configuration and app settings
    - Database credentials and environment variables
@@ -157,9 +173,12 @@ FRONTEND KEY FILES:
 
 2. src/components/ChatWindow.jsx
    - Real-time message display and input
-   - Voice input integration
-   - Quick symptom suggestions
+   - Voice input integration via VoiceButton
+   - Image upload button for medical image analysis
+   - Image generation button for AI-powered medical image creation
+   - Quick symptom suggestion buttons
    - Message history scrolling
+   - Responsive icon sizing for mobile displays
 
 3. src/components/RiskCard.jsx
    - Displays triage results from AI analysis
@@ -246,6 +265,15 @@ FRONTEND KEY FILES:
    - Authentication token handling
    - Request/response interceptors
 
+9. src/services/imageService.js
+   - Image generation API calls with prompt handling
+   - Image analysis for medical image interpretation
+   - PDF processing and extraction (images + text)
+   - Client-side rate limiting (3 requests per minute)
+   - Base64 file conversion for image upload
+   - Error handling and fallback strategies
+   - Rate limit status reporting to UI
+
 5. src/services/triageService.js
    - API calls for triage operations
    - User authentication functions
@@ -303,6 +331,54 @@ SYMPTOM TRIAGE FLOW:
    - Medical advice in current language
    - Facility recommendations
    - Text-to-speech playback option
+
+IMAGE GENERATION FLOW:
+1. User enters image description prompt in ChatWindow.jsx
+2. Clicks image generation button to open modal
+3. Frontend calls imageService.generateImage(prompt, size, quality)
+4. Client-side rate limiter checks: 3 requests per minute max (20 sec interval)
+5. Backend VisionAnalysisView processes:
+   - Validates prompt content
+   - Calls Azure OpenAI DALL-E API
+   - Falls back to HuggingFace Stable Diffusion if needed
+   - Saves generated image to ./image_storage directory
+   - Returns base64-encoded image data
+6. Frontend displays generated image in chat
+7. User can:
+   - View full-size image in message
+   - Download generated image
+   - Include medical images with consultations
+
+IMAGE ANALYSIS FLOW:
+1. User uploads medical image via image upload button
+2. Frontend converts image to base64 via fileToBase64()
+3. User asks analysis question in chat
+4. Frontend calls imageService.analyzeImage(imageBase64, question)
+5. Backend VisionAnalysisView processes:
+   - Sends image + question to Azure OpenAI Vision API
+   - Generates medical analysis of the image
+   - Returns structured analysis text
+6. Frontend displays analysis in MessageBubble
+7. User sees:
+   - Original uploaded image
+   - AI-generated medical analysis
+
+PDF PROCESSING FLOW:
+1. User uploads PDF medical report via (previously available)
+2. Frontend calls imageService.processPDF(pdfFile)
+3. Backend PdfProcessingView processes:
+   - Extracts images from PDF pages
+   - Extracts text content from PDF
+   - Analyzes each page image with Vision API
+   - Generates consolidated summary of findings
+4. Frontend displays:
+   - File metadata (pages, extracted images count)
+   - Page-by-page medical analysis
+   - Overall summary and conclusions
+5. User can:
+   - Review extracted text
+   - See Vision API analysis per page
+   - Get automatic medical report interpretation
 
 LOCATION-BASED FACILITY DISCOVERY:
 1. ChatPage requests user location via locationService.getCurrentLocation()
@@ -390,7 +466,35 @@ STEP 8: FACILITY DISCOVERY AND MAPPING
   - Facilities sourced in real-time via Baato API
   - Filter facilities by type and distance
 
-STEP 9: HEALTH RECORD TRACKING (DASHBOARD)
+STEP 9: MEDICAL IMAGE ANALYSIS (OPTIONAL)
+  • User uploads medical image or PDF report during consultation
+  • For images:
+    - Clicks image upload button
+    - Selects medical image from device
+    - Asks specific question about the image
+    - AI Vision analyzes image and answers question
+    - Analysis appears in chat with image
+  • For PDFs:
+    - Clicks PDF upload button (if enabled)
+    - System extracts images and text from report
+    - Vision AI analyzes each page
+    - User receives consolidated medical interpretation
+  • Image analysis complements symptom triage:
+    - Combines text symptoms + visual medical evidence
+    - Provides more comprehensive assessment
+
+STEP 10: AI IMAGE GENERATION (OPTIONAL)
+  • User clicks image generation button to create medical illustrations
+  • Describes desired medical image (e.g., "doctor examining patient")
+  • Enters prompt and submits (rate-limited to 3 per minute)
+  • AI generates from text prompt using DALL-E
+  • Generated image appears in chat
+  • User can:
+    - Download generated medical illustrations
+    - Include with medical records
+    - Use for educational purposes
+
+STEP 11: HEALTH RECORD TRACKING (DASHBOARD)
   • User navigates to DashboardPage for health analytics
   • Sees statistics about consultations:
     - Total consultations (count)
@@ -407,7 +511,7 @@ STEP 9: HEALTH RECORD TRACKING (DASHBOARD)
     - Tracking health improvements
     - Sharing data with doctors
 
-STEP 10: PROFILE MANAGEMENT
+STEP 12: PROFILE MANAGEMENT
   • User accesses ProfilePage for account management
   • Multiple tabs for different settings:
     * Personal Info: Update name, age, gender, contact details
@@ -462,25 +566,32 @@ API ENDPOINTS SUMMARY
 ================================================================================
 
 AUTHENTICATION:
-  POST /api/register/       - Create new user account
-  POST /api/login/          - User login and token generation
-  POST /api/logout/         - Logout and session cleanup
-  GET  /api/profile/        - Fetch user profile
-  PUT  /api/profile/        - Update user profile
+  POST /api/register/         - Create new user account
+  POST /api/login/            - User login and token generation
+  POST /api/logout/           - Logout and session cleanup
+  GET  /api/profile/          - Fetch user profile
+  PUT  /api/profile/          - Update user profile
 
 TRIAGE & CHAT:
-  POST /api/triage/         - Submit symptoms for analysis
-  GET  /api/history/        - Get user's consultation history
-  DELETE /api/history/{id}/ - Delete specific consultation
+  POST /api/triage/           - Submit symptoms for analysis
+  GET  /api/history/          - Get user's consultation history
+  DELETE /api/history/{id}/   - Delete specific consultation
+
+IMAGE & VISION:
+  POST /api/image/generate/   - Generate medical image from text prompt
+  POST /api/image/analyze/    - Analyze uploaded medical image
+  POST /api/image/pdf/        - Extract and analyze PDF medical documents
+  GET  /api/image/rate-limit/ - Check image rate limit status
+  GET  /api/image/logs/       - Get image processing logs
 
 UTILITIES:
-  GET  /api/places/         - Get place name from coordinates
-  GET  /api/facilities/     - Get nearby health facilities
-  GET  /api/stats/          - Application statistics
+  GET  /api/places/           - Get place name from coordinates
+  GET  /api/facilities/       - Get nearby health facilities
+  GET  /api/stats/            - Application statistics
 
 SETTINGS:
-  GET  /api/translations/   - Multilingual text strings
-  POST /api/voice-logs/     - Save text-to-speech logs
+  GET  /api/translations/     - Multilingual text strings
+  POST /api/voice-logs/       - Save text-to-speech logs
 
 
 RESPONSIVE DESIGN APPROACH
@@ -496,10 +607,13 @@ Mobile Optimization:
 Mobile Features:
   • Hamburger menu navigation on small screens
   • Floating action buttons repositioned for mobile
-  • Touch-friendly button sizes (min 40px×40px)
+  • Touch-friendly button sizes (32px on mobile, 40px on desktop)
+  • Responsive icon sizing (3px on mobile, 5px on desktop)
   • Stacked layouts on phones, side-by-side on desktop
   • Bottom-sheet modals for history on mobile
   • Voice input optimized for mobile devices
+  • Image upload and generation buttons scale responsively
+  • Image preview adapts to screen size
 
 Accessibility:
   • Semantic HTML structure
@@ -517,18 +631,40 @@ BACKEND SETUP:
   2. Create virtual environment: python -m venv venv
   3. Activate: source venv/bin/activate (Unix) or venv\Scripts\activate (Windows)
   4. Install dependencies: pip install -r requirements.txt
-  5. Configure environment variables in .env file
-  6. Run migrations: python manage.py migrate
-  7. Start server: python manage.py runserver
-  8. Production: gunicorn nepalcare.wsgi
+  5. Configure environment variables in .env file:
+     - Set AZURE_OPENAI_API_KEY, AZURE_IMAGE_ENDPOINT, AZURE_VISION_ENDPOINT
+     - Set IMAGE_STORAGE_DIR=./image_storage (Windows-compatible path)
+     - Set IMAGE_RPM_LIMIT=3 and IMAGE_MIN_INTERVAL_SECONDS=20
+  6. Create image and log directories: mkdir image_storage
+  7. Run migrations: python manage.py migrate
+  8. Test image endpoints: curl -X POST http://localhost:8000/api/image/generate/
+  9. Start server: python manage.py runserver
+  10. Production: gunicorn nepalcare.wsgi (with image storage on persistent volume)
+
+Image Feature Configuration:
+  • Verify Azure OpenAI account has image generation permissions
+  • Test AZUIRE_IMAGE_ENDPOINT and AZURE_VISION_ENDPOINT connectivity
+  • Ensure image_storage directory has write permissions
+  • Monitor disk space usage (images stored locally)
+  • Set up log rotation for generated image logs
 
 FRONTEND SETUP:
   1. Navigate to frontend directory
   2. Install dependencies: npm install
   3. Configure API base URL in src/services/api.js
-  4. Development: npm run dev
-  5. Build: npm run build
-  6. Production: Deploy build/ folder to static hosting
+  4. Set rate limit constants in imageService.js (defaults: 3/min, 20 sec apart)
+  5. Configure image generation modal styling if needed
+  6. Development: npm run dev
+  7. Build: npm run build
+  8. Test image features in browser dev tools
+  9. Production: Deploy build/ folder to static hosting (with API proxy for /api/image/)
+
+Testing Image Features:
+  • Test image generation with valid prompts
+  • Upload sample medical images for vision analysis
+  • Verify rate limiting with rapid requests
+  • Check browser console for imageService logs
+  • Verify image_storage directory receives generated files
 
 
 SECURITY CONSIDERATIONS
@@ -542,48 +678,356 @@ SECURITY CONSIDERATIONS
   • SQL injection prevention via ORM (Django models)
   • HTTPS recommended for production deployment
   • User data encryption in transit and at rest
+  • Image prompt validation to prevent malicious content
+  • Rate limiting enforced on both client and server (3 requests per minute)
+  • Image storage directory protected from direct web access
+  • PDF file validation before processing (type, size checks)
+  • API key rotation for Azure OpenAI endpoints
+
+
+IMAGE PROCESSING CONFIGURATION
+================================================================================
+
+Rate Limiting:
+  • Global Limit: 3 image requests per minute per user
+  • Minimum Interval: 20 seconds between image generation requests
+  • Vision API: 10 requests per minute (6 seconds between requests)
+  • Enforcement: Client-side (JavaScript) + Server-side (Python)
+  • Purpose: Prevent API quota exhaustion and excessive costs
+
+Image Storage:
+  • Directory: ./image_storage/ (relative path, cross-platform compatible)
+  • Contents: Generated images, extracted PDF images, processing logs
+  • Cleanup: Manual purge recommended every 30 days
+  • Disk Usage: Monitor to prevent capacity issues
+
+API Endpoints (Azure OpenAI):
+  • Image Generation: AZURE_IMAGE_ENDPOINT (DALL-E 3)
+  • Vision Analysis: AZURE_VISION_ENDPOINT (GPT-4 Vision)
+  • Authentication: AZURE_OPENAI_API_KEY
+  • Fallbacks: HuggingFace Stable Diffusion, Pollinations API
+
+Environment Variables Required:
+  • AZURE_OPENAI_API_KEY: Primary API authentication
+  • AZURE_IMAGE_ENDPOINT: Image generation endpoint URL
+  • AZURE_VISION_ENDPOINT: Vision analysis endpoint URL
+  • IMAGE_STORAGE_DIR: Path for file storage (./image_storage for Windows)
+  • IMAGE_RPM_LIMIT: Rate limit per minute (default: 3)
+  • IMAGE_MIN_INTERVAL_SECONDS: Minimum seconds between requests (default: 20)
 
 
 MAINTENANCE AND MONITORING
 ================================================================================
 
 Key Areas to Monitor:
-  • AI model accuracy and response quality
-  • ChromaDB embedding relevance
-  • API response times and latency
+  • AI model accuracy and response quality for symptom triage
+  • Vision API performance for image analysis tasks
+  • Image generation request completion rates and quality
+  • Image rate limiting compliance (3 requests/minute)
+  • ChromaDB embedding relevance for semantic search
+  • API response times and latency across all endpoints
   • User authentication success rates
-  • Database query performance
+  • Database query performance and optimization
   • Geographic service reliability (GPS, Baato API)
   • Text-to-speech service availability
+  • PDF processing success and extraction accuracy
+  • Image storage capacity and cleanup
 
 Regular Tasks:
   • Database backups and optimization
   • AI model retraining with new medical data
-  • ChromaDB index updates
-  • Security patches for dependencies
+  • ChromaDB index updates with new embeddings
+  • Image storage cleanup for old generated/uploaded files
+  • Vision API cost monitoring (per-image charges)
+  • Rate limit threshold adjustments based on usage patterns
+  • Security patches for Python and frontend dependencies
   • User feedback collection and analysis
   • Performance profiling and optimization
+  • PDF processing pipeline validation
+
+
+ADVANCED IMAGE FEATURES
+================================================================================
+
+IMAGE GENERATION (DALL-E Integration):
+  Purpose: Create medical illustrations for educational and reference purposes
+  
+  Process:
+    1. User enters medical image description prompt
+    2. Frontend validates prompt (non-empty, reasonable length)
+    3. Client-side rate limiter checks: 3 per minute, 20 seconds apart
+    4. Sends: POST /api/image/generate/ with { prompt, size, quality, n }
+    5. Backend image_client.py makes Azure OpenAI API call
+    6. Generated image base64 encoded and returned
+    7. Frontend displays in MessageBubble with source metadata
+  
+  Features:
+    • Prompt validation and sanitization
+    • Automatic fallback to HuggingFace if Azure fails
+    • Pollinations.ai fallback for free tier users
+    • Image stored locally in ./image_storage/ for future reference
+    • Rate limiting prevents API quota exhaustion
+    • Error messages guide user on retry timing
+  
+  API Request: POST /api/image/generate/
+    Parameters:
+      - prompt: string (required) - Description of medical image
+      - size: "1024x1024" | "1024x1792" | "1792x1024" (optional)
+      - quality: "standard" | "hd" (optional)
+      - n: number (optional) - Always set to 1 per request
+    
+    Response:
+      {
+        "images": [{
+          "b64_json": "iVBORw0KGgo..." (base64 PNG image data),
+          "url": "https://..." (optional, if available)
+        }],
+        "source": "azure_openai | huggingface | pollinations",
+        "processing_time_ms": 2500,
+        "error": null
+      }
+
+VISION-BASED IMAGE ANALYSIS:
+  Purpose: Analyze medical images (X-rays, reports, photos) with Vision AI
+  
+  Process:
+    1. User uploads medical image via image upload button
+    2. Frontend converts file to base64 via fileToBase64()
+    3. User enters analysis question (e.g., "What does this image show?")
+    4. Sends: POST /api/image/analyze/ with { image_source, question }
+    5. Backend sends to Azure OpenAI Vision API
+    6. Returns medical interpretation of the image
+    7. Frontend displays analysis with original image
+  
+  Features:
+    • Supports JPG, PNG, GIF, WEBP formats
+    • Base64 input or URL-based images
+    • Field expert-level analysis from GPT-4 Vision
+    • Automatic medical terminology appropriate language
+    • Supports follow-up questions for clarification
+    • Error handling for unsupported image types
+  
+  API Request: POST /api/image/analyze/
+    Parameters:
+      - image_source: string (required) - Base64 or image URL
+      - question: string (required) - Analysis question
+    
+    Response:
+      {
+        "analysis": "The image shows... [detailed analysis]",
+        "source": "azure_gpt_5.4_vision",
+        "processing_time_ms": 1800,
+        "error": null
+      }
+
+PDF MEDICAL DOCUMENT ANALYSIS:
+  Purpose: Extract and analyze medical reports (PDFs with text/images)
+  
+  Process:
+    1. User uploads PDF medical report
+    2. Frontend creates FormData with file
+    3. Backend receives PDF and:
+       a. Extracts all images from PDF pages
+       b. Extracts text content from each page
+       c. Analyzes each image with Vision API
+       d. Generates consolidated summary
+    4. Returns full extraction report with analyses
+    5. Frontend displays:
+       - Metadata (pages, images extracted)
+       - Page-by-page findings
+       - Overall medical summary and conclusions
+  
+  Features:
+    • Supports PDF files up to 10MB
+    • Extracts images per page with resolution preservation
+    • Text extraction via PyPDF2 and pdf2image
+    • Vision analysis for each page image
+    • Consolidated summary generation
+    • Error handling for corrupted PDFs
+  
+  API Request: POST /api/image/pdf/
+    Parameters (FormData):
+      - file: File (required) - PDF file object
+    
+    OR (JSON):
+      {
+        "pdf_path": "path/to/medical_report.pdf"
+      }
+    
+    Response:
+      {
+        "total_pages": 3,
+        "extracted_images": [
+          "path/to/image_page_1.png",
+          "path/to/image_page_2.png"
+        ],
+        "text_content": [
+          {
+            "page": 1,
+            "text": "Patient Name: John Doe..."
+          },
+          {
+            "page": 2,
+            "text": "Diagnosis: ..."
+          }
+        ],
+        "page_analyses": [
+          {
+            "page": 1,
+            "analysis": "The report shows..."
+          }
+        ],
+        "overall_summary": "Consolidatedmedical findings...",
+        "error": null
+      }
+
+CLIENT-SIDE IMAGE SERVICE (src/services/imageService.js):
+  
+  Main Functions:
+    
+    generateImage(prompt, size, quality, n)
+      - Generates medical image from text
+      - Client rate limiting enforced
+      - Returns Promise<{images, source, error}>
+    
+    analyzeImage(imageSource, question)
+      - Analyzes medical image with Vision AI
+      - imageSource: base64 or URL
+      - Returns Promise<{analysis, source, error}>
+    
+    processPDF(pdfInput)
+      - Handles PDF file or path
+      - Returns Promise<{total_pages, extracted_images, text_content}>
+    
+    getLocalRateLimitStatus()
+      - Returns {limit, rateLimited, waitSeconds}
+      - Used for UI feedback without server call
+    
+    fileToBase64(file)
+      - Converts File object to base64 string
+      - Supports all image formats
+      - Returns Promise<string> (data URI)
+    
+    downloadImage(imageUrl, filename)
+      - Downloads generated image to client
+      - filename: "generated_image.png"
+  
+  Rate Limiter Implementation:
+    - Tracks timestamps of all requests (last 60 seconds)
+    - Enforces minimum 20 second interval between requests
+    - Max 3 requests in any 60-second window
+    - Returns estimated wait time if throttled
+    - Client applies automatic backoff before server error
+
+MOBILE OPTIMIZATION FOR IMAGE FEATURES:
+  
+  ChatWindow Icon Buttons:
+    • Image Generation (purple): p-1 sm:p-2 md:p-2.5 (32px-40px responsive)
+    • Image Upload (blue): p-1 sm:p-2 md:p-2.5 (32px-40px responsive)
+    • Icons: w-3 sm:w-4 md:w-5 (12px-20px responsive)
+    • Touch-friendly on all screen sizes
+    • No overflow on narrow mobile screens
+  
+  Modal Dialogs:
+    • Image generation modal: Full-width on mobile, centered on desktop
+    • Textarea for prompt input adapts to screen size
+    • Submit button positioned for easy thumb access on mobile
+  
+  Image Display:
+    • Generated/analyzed images scale to viewport width
+    • Maintain aspect ratio on all devices
+    • Light box view available for full-size inspection
+    • Responsive message bubbles contain images properly
+
+ERROR HANDLING AND USER FEEDBACK:
+  
+  Rate Limit Errors:
+    • "⏱️ Rate limit in effect. Please wait X.Xs before generating..."
+    • Client blocks UI until rate limit passes
+    • Server also enforces to prevent bypass
+    • Clear messaging about 3 requests per minute limit
+  
+  API Errors:
+    • 404: Endpoint not found - suggests Django restart
+    • 401: Authentication failed - check API key configuration
+    • Rate limit exceeded: Auto-retry after wait period
+    • Image format not supported: List supported formats
+    • PDF corrupted: Offer file validation suggestions
+  
+  Vision API Failures:
+    • Fallback to alternate analysis approach
+    • Return best-effort analysis with error flag
+    • User sees "Analysis confidence: LOW" if partial failure
+  
+  Image Generation Failures:
+    • Primary: Azure OpenAI DALL-E
+    • Fallback: HuggingFace Stable Diffusion (free)
+    • Last Resort: Pollinations.ai free API
+    • User sees which provider generated the image
+
+DEPLOYMENT CONSIDERATIONS:
+  
+  Production Setup:
+    • Use separate storage bucket for images (S3, Azure Blob Storage)
+    • Configure CDN for fast image delivery
+    • Set up periodic cleanup of old images
+    • Monitor Azure OpenAI API costs (per-image charges)
+    • Use environment-specific rate limits
+    • Enable image compression before storage
+  
+  Database:
+    • Store image metadata (source, prompt, timestamp, user ID)
+    • Link images to conversations for context
+    • Enable image history for medical record keeping
+  
+  Performance:
+    • Cache generated images by similar prompts
+    • Compress stored images (JPEG, WebP)
+    • Use CDN to serve images globally
+    • Implement asynchronous image processing for PDFs
+    • Monitor Vision API latency (typical: 1-2 seconds)
+  
+  Security:
+    • Validate file uploads (type, size, content)
+    • Sanitize prompts to prevent prompt injection
+    • Encrypt image data in transit (HTTPS only)
+    • Restrict image storage access to authenticated users
+    • Audit Vision API usage for compliance
+    • Regular security patches for image libraries (Pillow, pdf2image)
 
 
 CONCLUSION
 ================================================================================
 
 HealthSaathi is a comprehensive healthcare AI platform that combines:
-  • Advanced AI for medical triage
-  • Geographic intelligence for facility location
-  • Multilingual support for accessibility
+  • Advanced AI for medical triage and risk assessment
+  • Vision AI for medical image analysis and interpretation
+  • Image generation for medical illustrations and reports
+  • PDF processing for medical document analysis
+  • Geographic intelligence for facility location discovery
+  • Multilingual support for accessibility (Nepali & English)
   • Modern web technologies for scalability
-  • Mobile-first responsive design
-  • Secure user authentication
+  • Mobile-first responsive design with adaptive icons
+  • Secure user authentication and data privacy
+  • Rate-limited image processing (3 requests per minute)
 
 The architecture separates concerns between frontend (user interface) and 
 backend (business logic), allowing independent development and scaling. The 
 system leverages ChromaDB for semantic search, Baato for location services, 
-and AI models for intelligent medical analysis.
+and multiple AI models (Azure OpenAI, Vision API, Google Gemini, Groq) for 
+intelligent medical analysis and image processing.
+
+Key Innovations in Image Features:
+  • Client-side + Server-side rate limiting prevents API quota exhaustion
+  • Multiple image generation fallbacks ensure reliable service
+  • PDF extraction with automatic Vision analysis for medical reports
+  • Cross-platform image storage using relative paths (Windows-compatible)
+  • Responsive icon sizing automatically adapts to mobile screens
+  • Integrated rate limit feedback guides user expectations
 
 The platform is designed to serve healthcare seekers across Nepal, providing 
-instant, personalized medical guidance and facility recommendations in their 
-preferred language.
+instant, personalized medical guidance, facility recommendations, and visual 
+medical analysis in their preferred language.
 
 ================================================================================
 End of Documentation
