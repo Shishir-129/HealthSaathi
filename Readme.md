@@ -7,7 +7,7 @@
  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝
 ```
 
-# HealthSaathi 🏥 - Your AI Health Companion for Rural Nepal
+# HealthSaathi 🏥 - Your AI Health Companion
 
 <div align="center">
 
